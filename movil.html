@@ -417,6 +417,54 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
     <div class="card-title">📦 Últimos productos agregados</div>
     <div id="ultimosProductos"></div>
   </div>
+
+  <!-- ZONA DE PELIGRO -->
+  <div style="margin-top:24px;margin-bottom:80px">
+    <button onclick="toggleZonaPeligro()"
+      style="width:100%;background:none;border:2px dashed #dc2626;border-radius:12px;
+             padding:14px;color:#dc2626;font-weight:700;font-size:13px;cursor:pointer;
+             touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;
+             transition:all .2s;">
+      ⚠️ Zona de peligro — toca para expandir
+    </button>
+
+    <div id="zonaPeligroPanel" style="display:none;margin-top:10px;
+         background:#fff5f5;border:2px solid #dc2626;border-radius:12px;padding:16px;">
+
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:28px">☠️</div>
+        <div style="font-weight:800;font-size:14px;color:#dc2626;margin-top:4px">ZONA DE PELIGRO</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px">
+          Esta acción no se puede deshacer. Sé muy cuidadosa.
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <button onclick="borrarSoloNotas()"
+          style="width:100%;padding:13px;background:white;border:2px solid #dc2626;
+                 border-radius:10px;color:#dc2626;font-weight:700;font-size:13px;
+                 cursor:pointer;touch-action:manipulation;transition:all .2s;">
+          🗒️ Borrar solo notas / historial
+        </button>
+
+        <button onclick="borrarSoloInventario()"
+          style="width:100%;padding:13px;background:white;border:2px solid #ea580c;
+                 border-radius:10px;color:#ea580c;font-weight:700;font-size:13px;
+                 cursor:pointer;touch-action:manipulation;transition:all .2s;">
+          📦 Borrar solo inventario
+        </button>
+
+        <button onclick="borrarTodoMovil()"
+          style="width:100%;padding:14px;background:linear-gradient(135deg,#dc2626,#b91c1c);
+                 border:none;border-radius:10px;color:white;font-weight:800;font-size:14px;
+                 cursor:pointer;touch-action:manipulation;box-shadow:0 4px 14px rgba(220,38,38,0.4);
+                 transition:all .2s;">
+          💣 BORRAR TODO (notas + inventario)
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="summary-bar" id="summaryBar" style="display:none">
   <div>
@@ -1614,6 +1662,47 @@ function editarProducto(id) {
   calcMargen();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('✏️ Editando: ' + p.name, 'info');
+}
+
+// ─── ZONA DE PELIGRO ──────────────────────────────────────────────────────────
+function toggleZonaPeligro() {
+  const panel = document.getElementById('zonaPeligroPanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+}
+
+function borrarSoloNotas() {
+  if (!confirm('¿Borrar todo el historial de notas y ventas?\n\nEsto NO borra el inventario.')) return;
+  if (!confirm('⚠️ Segunda confirmación:\n¿Estás SEGURA? Las notas no se pueden recuperar.')) return;
+  sales = []; cuts = [];
+  saveData();
+  renderNotas();
+  toast('🗒️ Historial borrado', 'info');
+  toggleZonaPeligro();
+}
+
+function borrarSoloInventario() {
+  if (!confirm('¿Borrar todo el inventario de productos?\n\nEsto NO borra las notas.')) return;
+  if (!confirm('⚠️ Segunda confirmación:\n¿Estás SEGURA? Los productos no se pueden recuperar.')) return;
+  products = [];
+  saveData();
+  renderInventario();
+  renderUltimosProductos();
+  toast('📦 Inventario borrado', 'info');
+  toggleZonaPeligro();
+}
+
+function borrarTodoMovil() {
+  if (!confirm('💣 ¿Borrar TODO?\n\nSe eliminarán productos, notas, ventas y cortes.\n\nEsta acción NO se puede deshacer.')) return;
+  if (!confirm('⚠️ ÚLTIMA ADVERTENCIA:\n¿Estás completamente segura?\n\nTodo quedará en cero.')) return;
+  products = []; sales = []; cuts = [];
+  try { localStorage.removeItem('naye_pos_backup'); } catch {}
+  if (typeof fbDoc !== 'undefined' && fbDoc) fbDoc.set({ products: [], sales: [], cuts: [], cfg }).catch(() => {});
+  renderInventario();
+  renderNotas();
+  renderUltimosProductos();
+  toast('✅ Todo borrado. Empezando desde cero.', 'info');
+  toggleZonaPeligro();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
