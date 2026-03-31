@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Brandy Móvil">
+<title>Brandy POS Móvil</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --blue: #1d4ed8; --blue-light: #eff6ff;
+  --green: #16a34a; --green-light: #dcfce7;
+  --red: #dc2626; --red-light: #fee2e2;
+  --orange: #ea580c; --orange-light: #fff7ed;
+  --bg: #f4f6f9; --white: #ffffff;
+  --text: #111827; --muted: #6b7280;
+  --border: #e5e7eb;
+}
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header { background: var(--blue); color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.header h1 { font-size: 17px; font-weight: 800; flex: 1; }
+.header .sync { font-size: 11px; opacity: 0.85; }
+
+/* NAV */
+.nav { display: grid; grid-template-columns: repeat(5, 1fr); background: white; border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 99; }
+.nav button { padding: 12px 4px; border: none; background: transparent; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; touch-action: manipulation; }
+.nav button.active { color: var(--blue); border-bottom-color: var(--blue); background: var(--blue-light); }
+.nav button span { display: block; font-size: 20px; margin-bottom: 2px; }
+
+/* CONTENT */
+.content { padding: 14px; max-width: 500px; margin: 0 auto; }
+
+/* CARDS */
+.card { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.card-title { padding: 12px 14px; font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* INPUTS */
+.input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; font-family: inherit; transition: border-color .15s; }
+.input:focus { border-color: var(--blue); }
+.input-group { margin-bottom: 12px; }
+.input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* BUTTONS */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 18px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; touch-action: manipulation; transition: opacity .15s; width: 100%; margin-bottom: 10px; }
+.btn:active { opacity: 0.8; }
+.btn-blue { background: var(--blue); color: white; }
+.btn-green { background: var(--green); color: white; }
+.btn-orange { background: var(--orange); color: white; }
+.btn-wa { background: #25D366; color: white; }
+.btn-ghost { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+.btn-sm { padding: 9px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
+
+/* SCAN BUTTON BIG */
+.scan-big { background: var(--blue); color: white; border: none; border-radius: 16px; padding: 24px; width: 100%; cursor: pointer; font-family: inherit; touch-action: manipulation; margin-bottom: 12px; }
+.scan-big .icon { font-size: 52px; display: block; margin-bottom: 8px; }
+.scan-big .label { font-size: 17px; font-weight: 800; display: block; }
+.scan-big .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; display: block; }
+
+/* SCANNER */
+#scannerBox { border-radius: 10px; overflow: hidden; background: #000; width: 100%; min-height: 260px; }
+.scan-result { background: var(--green-light); border: 1.5px solid var(--green); border-radius: 8px; padding: 12px 14px; font-weight: 700; color: var(--green); font-size: 14px; margin-top: 10px; display: none; }
+
+/* PRODUCT CARD */
+.product-item { padding: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.product-item:last-child { border-bottom: none; }
+.product-name { font-weight: 700; font-size: 14px; }
+.product-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.product-price { font-weight: 800; font-size: 16px; color: var(--blue); font-family: monospace; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+.tag-green { background: var(--green-light); color: var(--green); }
+.tag-red { background: var(--red-light); color: var(--red); }
+.tag-orange { background: var(--orange-light); color: var(--orange); }
+
+/* NOTA CARD */
+.nota-header { padding: 14px; border-bottom: 1px solid var(--border); }
+.nota-cliente { font-size: 18px; font-weight: 800; }
+.nota-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.nota-total { font-size: 22px; font-weight: 900; color: var(--blue); font-family: monospace; }
+.nota-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.nota-table th { padding: 8px 14px; text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; background: var(--bg); border-bottom: 1px solid var(--border); }
+.nota-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.nota-table tr:last-child td { border-bottom: none; }
+
+/* TOAST */
+#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.25); display: none; white-space: nowrap; max-width: 90vw; }
+#toast.show { display: block; }
+#toast.success { background: var(--green); color: white; }
+#toast.error { background: var(--red); color: white; }
+#toast.info { background: var(--blue); color: white; }
+
+/* VENTA */
+.cart-item { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.cart-item:last-child { border-bottom: none; }
+.qty-ctrl { display: flex; align-items: center; gap: 8px; }
+.qty-btn { width: 32px; height: 32px; border: 1.5px solid var(--border); background: var(--bg); border-radius: 6px; font-size: 18px; cursor: pointer; touch-action: manipulation; display: flex; align-items: center; justify-content: center; }
+.qty-num { font-size: 15px; font-weight: 700; min-width: 24px; text-align: center; }
+
+/* EMPTY */
+.empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+.empty .icon { font-size: 48px; margin-bottom: 10px; }
+.empty p { font-size: 14px; }
+
+/* VENTA SUMMARY BAR */
+.summary-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 12px; z-index: 50; }
+.summary-bar .total-label { font-size: 12px; color: var(--muted); }
+.summary-bar .total-amount { font-size: 22px; font-weight: 900; color: var(--blue); font-family: monospace; flex: 1; }
+.summary-bar .checkout-btn { background: var(--green); color: white; border: none; border-radius: 10px; padding: 12px 20px; font-weight: 800; font-size: 15px; cursor: pointer; touch-action: manipulation; white-space: nowrap; }
+.has-cart { padding-bottom: 80px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:22px">🏪</span>
+  <h1 id="hdrName">Brandy POS</h1>
+  <span class="sync" id="syncStatus">⚡ Cargando...</span>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="showTab('scanner')"><span>📷</span>Escanear</button>
+  <button onclick="showTab('inventario')"><span>📦</span>Inventario</button>
+  <button onclick="showTab('venta')"><span>🛒</span>Venta</button>
+  <button onclick="showTab('notas')"><span>📋</span>Notas</button>
+  <button onclick="showTab('agregar')"><span>➕</span>Producto</button>
+</div>
+
+<!-- ═══ TAB: ESCÁNER ═══ -->
+<div id="tab-scanner" class="content">
+  <button class="scan-big" onclick="startScan('multi')">
+    <span class="icon">📷</span>
+    <span class="label">Escanear Código / QR</span>
+    <span class="sub">Código de barras • QR de nota • QR de producto</span>
+  </button>
+
+  <div class="card" id="scannerCard" style="display:none">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>📷 Cámara activa</span>
+      <button class="btn-sm btn btn-ghost" onclick="stopScan()" style="width:auto;margin:0">✕ Cerrar</button>
+    </div>
+    <div style="padding:12px">
+      <div id="scannerBox"></div>
+      <div id="scanResult" class="scan-result"></div>
+    </div>
+  </div>
+
+  <div class="card" id="scanResultCard" style="display:none">
+    <div class="card-title">✅ Resultado</div>
+    <div id="scanResultContent" style="padding:14px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📖 ¿Cómo usar?</div>
+    <div style="padding:14px;font-size:13px;color:var(--muted);line-height:1.8">
+      📦 <strong>Código de barras</strong> → busca el producto en inventario<br>
+      📋 <strong>QR de nota</strong> → muestra la nota de la clienta<br>
+      🔍 <strong>QR de producto</strong> → agrega al carrito de venta
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: INVENTARIO ═══ -->
+<div id="tab-inventario" class="content" style="display:none">
+
+  <!-- Botón Top 10 -->
+  <button onclick="toggleTop10Mob()"
+    style="width:100%;margin-bottom:12px;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px">
+    🏆 Ver Top 10 productos más vendidos
+  </button>
+
+  <!-- Panel Top 10 móvil -->
+  <div id="top10MobPanel" style="display:none;margin-bottom:12px">
+    <div class="card">
+      <div class="card-title" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;display:flex;justify-content:space-between;align-items:center">
+        🏆 Top 10 más vendidos
+        <button onclick="toggleTop10Mob()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px">✕</button>
+      </div>
+      <div id="top10MobList"></div>
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label>Buscar producto</label>
+    <div style="display:flex;gap:8px">
+      <input class="input" id="invSearch" placeholder="Nombre o código de barras..." oninput="renderInventario()" style="flex:1">
+      <button onclick="startScan('inventario')" style="background:var(--blue);color:white;border:none;border-radius:8px;padding:0 14px;font-size:20px;cursor:pointer;touch-action:manipulation;flex-shrink:0">📷</button>
+    </div>
+  </div>
+  <div id="invList"></div>
+</div>
+
+<!-- ═══ TAB: VENTA ═══ -->
+<div id="tab-venta" class="content" style="display:none" id="ventaContent">
+  <div class="input-group">
+    <label>👤 Nombre de la clienta</label>
+    <input class="input" id="ventaCliente" placeholder="Ej: María García" style="font-size:16px">
+  </div>
+
+  <div class="input-group">
+    <label>Buscar y agregar producto</label>
+    <div style="display:flex;gap:8px">
+      <input class="input" id="ventaSearch" placeholder="Nombre o código..." oninput="searchVenta()" style="flex:1">
+      <button onclick="startScan('venta')" style="background:var(--blue);color:white;border:none;border-radius:8px;padding:0 14px;font-size:20px;cursor:pointer;touch-action:manipulation;flex-shrink:0">📷</button>
+    </div>
+    <div id="ventaSearchResults" style="display:none;background:white;border:1px solid var(--border);border-radius:8px;margin-top:6px;max-height:200px;overflow-y:auto"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🛒 Carrito</div>
+    <div id="cartList">
+      <div class="empty"><div class="icon">🛒</div><p>Agrega productos</p></div>
+    </div>
+  </div>
+
+  <!-- Enviar a número nuevo -->
+  <div style="margin:0 0 12px;border:1.5px solid #25D366;border-radius:10px;padding:12px;background:#f0fdf4">
+    <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:8px;text-transform:uppercase">📲 Enviar nota a número nuevo</div>
+    <div style="display:flex;gap:8px">
+      <input type="tel" id="waNumNuevoMob" placeholder="10 dígitos ej: 5512345678"
+        maxlength="10" inputmode="numeric"
+        style="flex:1;padding:12px;border:1px solid #86efac;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
+      <button onclick="waNumNuevoMobEnviar()"
+        style="background:#25D366;color:white;border:none;border-radius:8px;padding:0 16px;font-weight:800;cursor:pointer;font-size:14px;touch-action:manipulation;white-space:nowrap">
+        Enviar
+      </button>
+    </div>
+  </div>
+
+  <div style="height:80px"></div>
+</div>
+
+<!-- ═══ TAB: NOTAS ═══ -->
+<div id="tab-notas" class="content" style="display:none">
+
+  <!-- Botón principal de Reportes -->
+  <button onclick="toggleReporteMenu()"
+    style="width:100%;margin-bottom:12px;padding:14px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px">
+    📊 Reportes de Ventas
+  </button>
+
+  <!-- Submenú de tipo de reporte -->
+  <div id="reporteMenu" style="display:none;margin-bottom:14px">
+    <div class="card">
+      <div class="card-title">📅 Selecciona el período</div>
+      <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+        <button onclick="generarReporteMob('semanal')"
+          style="padding:13px;background:#eff6ff;border:1.5px solid #1d4ed8;border-radius:10px;color:#1d4ed8;font-weight:700;font-size:14px;cursor:pointer;touch-action:manipulation;text-align:left">
+          📅 Reporte Semanal<br><span style="font-size:11px;font-weight:400;opacity:.8">Ventas de los últimos 7 días con comparativa</span>
+        </button>
+        <button onclick="generarReporteMob('mensual')"
+          style="padding:13px;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;color:#16a34a;font-weight:700;font-size:14px;cursor:pointer;touch-action:manipulation;text-align:left">
+          📆 Reporte Mensual<br><span style="font-size:11px;font-weight:400;opacity:.8">Comparativa de meses con top 10 productos</span>
+        </button>
+        <button onclick="generarReporteMob('anual')"
+          style="padding:13px;background:#fdf4ff;border:1.5px solid #7c3aed;border-radius:10px;color:#7c3aed;font-weight:700;font-size:14px;cursor:pointer;touch-action:manipulation;text-align:left">
+          📈 Reporte Anual<br><span style="font-size:11px;font-weight:400;opacity:.8">Comparativa anual y top 10 más vendidos</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor del reporte generado -->
+  <div id="reporteContainer" style="display:none;margin-bottom:14px">
+    <div class="card">
+      <div style="padding:12px;display:flex;justify-content:space-between;align-items:center">
+        <div id="reporteTitulo" style="font-weight:800;font-size:14px;color:var(--blue)"></div>
+        <div style="display:flex;gap:6px">
+          <button onclick="reportePDFMob()" class="btn-sm btn" style="background:var(--blue);color:white;border:none;width:auto;margin:0;padding:8px 12px;font-size:12px">📄 PDF</button>
+          <button onclick="cerrarReporte()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:700">✕</button>
+        </div>
+      </div>
+
+      <!-- Resumen estadístico -->
+      <div id="reporteStats" style="display:grid;grid-template-columns:repeat(3,1fr);text-align:center;padding:0 12px 12px;gap:8px"></div>
+
+      <!-- Gráfica -->
+      <div style="padding:0 12px 12px">
+        <canvas id="chartMob" height="200"></canvas>
+      </div>
+
+      <!-- Top 10 productos -->
+      <div id="reporteTop10" style="display:none">
+        <div style="padding:8px 14px;font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;border-top:1px solid var(--border)">
+          🏆 Top 10 productos más vendidos
+        </div>
+        <div id="top10List"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador de notas -->
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <div style="flex:1;position:relative">
+      <input class="input" id="notaSearch" placeholder="Buscar por nombre de clienta..."
+        oninput="renderNotas()" autocomplete="off" style="flex:1">
+    </div>
+    <button onclick="startScan('nota')" style="background:var(--blue);color:white;border:none;border-radius:8px;padding:0 14px;font-size:20px;cursor:pointer;touch-action:manipulation;flex-shrink:0">📷</button>
+  </div>
+  <button class="btn btn-blue" style="margin-bottom:12px" onclick="mobReporteClientaPDF()">📄 Reporte de esta clienta</button>
+  <div id="notasList"></div>
+</div>
+
+<!-- ═══ TAB: AGREGAR PRODUCTO ═══ -->
+<div id="tab-agregar" class="content" style="display:none">
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">➕ Capturar Producto</div>
+    <div style="padding:14px">
+
+      <!-- BOTÓN IA: FOTOGRAFIAR PRODUCTO -->
+      <input type="file" id="fotoProductoInput" accept="image/*" capture="environment"
+        style="display:none" onchange="analizarFotoProducto(this)">
+
+      <button onclick="document.getElementById('fotoProductoInput').click()"
+        id="btnFotoIA"
+        style="width:100%;margin-bottom:14px;padding:16px;background:linear-gradient(135deg,#6366f1,#1d4ed8);color:white;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:26px">📸</span>
+        <div style="text-align:left">
+          <div>Fotografiar producto con IA</div>
+          <div style="font-size:11px;font-weight:400;opacity:0.85">La IA detecta marca, nombre y contenido</div>
+        </div>
+      </button>
+
+      <!-- Estado de análisis IA -->
+      <div id="iaStatus" style="display:none;margin-bottom:12px;padding:12px 14px;border-radius:8px;font-weight:700;font-size:13px;text-align:center"></div>
+
+      <!-- Preview foto -->
+      <div id="fotoPreview" style="display:none;margin-bottom:12px;text-align:center">
+        <img id="fotoImg" style="max-width:100%;max-height:180px;border-radius:8px;border:1.5px solid var(--border)">
+      </div>
+
+      <div class="input-group">
+        <label>Código de barras</label>
+        <div style="display:flex;gap:8px">
+          <input class="input" id="pBarcode" placeholder="Escanea o escribe el código" style="flex:1">
+          <button onclick="startScan('barcode')" style="background:var(--blue);color:white;border:none;border-radius:8px;padding:0 14px;font-size:20px;cursor:pointer;touch-action:manipulation;flex-shrink:0">📷</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Marca</label>
+        <input class="input" id="pMarca" placeholder="Ej: Schwarzkopf, Bonafont...">
+      </div>
+
+      <div class="input-group">
+        <label>Nombre del producto *</label>
+        <input class="input" id="pName" placeholder="Nombre del producto">
+      </div>
+
+      <div class="input-group">
+        <label>Contenido</label>
+        <input class="input" id="pContenido" placeholder="Ej: 170g, 500ml, 1L...">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="input-group">
+          <label>Precio compra ($)</label>
+          <input class="input" type="number" id="pBuyPrice" placeholder="0.00" inputmode="decimal" oninput="calcMargen()">
+        </div>
+        <div class="input-group">
+          <label>Precio venta ($) *</label>
+          <input class="input" type="number" id="pSellPrice" placeholder="0.00" inputmode="decimal" oninput="calcMargen()">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Inventario (piezas)</label>
+        <input class="input" type="number" id="pStock" placeholder="0" inputmode="numeric">
+      </div>
+
+      <div id="pMargen" style="display:none;background:var(--green-light);border:1.5px solid var(--green);border-radius:8px;padding:10px 14px;font-weight:700;color:var(--green);font-size:14px;margin-bottom:12px"></div>
+
+      <button class="btn btn-green" onclick="guardarProducto()">💾 Guardar Producto</button>
+      <button class="btn btn-ghost" onclick="limpiarFormProducto()">🗑️ Limpiar</button>
+    </div>
+  </div>
+
+  <!-- Lista rápida de últimos productos -->
+  <div class="card">
+    <div class="card-title">📦 Últimos productos agregados</div>
+    <div id="ultimosProductos"></div>
+  </div>
+</div>
+<div class="summary-bar" id="summaryBar" style="display:none">
+  <div>
+    <div class="total-label">Total</div>
+    <div class="total-amount" id="cartTotal">$0.00</div>
+  </div>
+  <button class="checkout-btn" onclick="completarVenta()">✅ Completar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── FIREBASE ─────────────────────────────────────────────────────────────────
+const fbCfg = {
+  apiKey: "AIzaSyAuJFzKFx1F35f-oD9rnYo01D2HJCGt_C8",
+  authDomain: "brandy-skincare-pos.firebaseapp.com",
+  projectId: "brandy-skincare-pos",
+  storageBucket: "brandy-skincare-pos.firebasestorage.app",
+  messagingSenderId: "661572753505",
+  appId: "1:661572753505:web:d4104559379c9189be3220"
+};
+let fbDoc = null, fbReady = false;
+try {
+  firebase.initializeApp(fbCfg);
+  fbDoc = firebase.firestore().collection('pos').doc('data');
+  fbReady = true;
+} catch(e) { console.warn('Firebase:', e.message); }
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let products = [], sales = [], cuts = [], cfg = { bizName: 'Brandy POS' };
+let cart = [];
+
+// ─── LOAD DATA ────────────────────────────────────────────────────────────────
+async function loadData() {
+  // Local primero
+  try {
+    const local = JSON.parse(localStorage.getItem('pos_backup') || 'null');
+    if (local) applyData(local);
+  } catch {}
+
+  // Firebase
+  if (fbReady) {
+    try {
+      const snap = await Promise.race([
+        fbDoc.get(),
+        new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 6000))
+      ]);
+      if (snap.exists) {
+        applyData(snap.data());
+        localStorage.setItem('pos_backup', JSON.stringify(snap.data()));
+        setSyncStatus('🟢 Sincronizado');
+      }
+    } catch(e) {
+      setSyncStatus('🔴 Sin conexión');
+    }
+
+    // Escuchar cambios en tiempo real
+    fbDoc.onSnapshot(snap => {
+      if (snap.exists) {
+        applyData(snap.data());
+        localStorage.setItem('pos_backup', JSON.stringify(snap.data()));
+        setSyncStatus('🟢 En línea');
+        renderInventario();
+        renderNotas();
+      }
+    }, () => setSyncStatus('🔴 Sin conexión'));
+  } else {
+    setSyncStatus('📱 Modo local');
+  }
+}
+
+function applyData(data) {
+  products = data.products || [];
+  sales    = data.sales    || [];
+  cuts     = data.cuts     || [];
+  if (data.cfg) cfg = { ...cfg, ...data.cfg };
+  document.getElementById('hdrName').textContent = cfg.bizName || 'Brandy POS';
+  renderInventario();
+  renderNotas();
+  renderUltimosProductos();
+}
+
+async function saveData() {
+  const data = { products, sales, cuts, cfg };
+  try { localStorage.setItem('pos_backup', JSON.stringify(data)); } catch {}
+  if (fbReady) fbDoc.set(data).catch(() => {});
+}
+
+function setSyncStatus(msg) {
+  document.getElementById('syncStatus').textContent = msg;
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  ['scanner','inventario','venta','notas','agregar'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.nav button').forEach((btn, i) => {
+    btn.classList.toggle('active', ['scanner','inventario','venta','notas','agregar'][i] === tab);
+  });
+  stopScan();
+  if (tab === 'venta') updateCartUI();
+  if (tab === 'agregar') renderUltimosProductos();
+}
+
+// ─── SCANNER ──────────────────────────────────────────────────────────────────
+let scanMode = 'multi';
+let _stream = null;
+let _scanning = false;
+
+function startScan(mode) {
+  scanMode = mode;
+  if (mode !== 'multi') showTab('scanner');
+  stopScan();
+
+  document.getElementById('scannerCard').style.display = '';
+  document.getElementById('scanResultCard').style.display = 'none';
+  document.getElementById('scannerBox').innerHTML = `
+    <video id="scanVideo" style="width:100%;height:260px;object-fit:cover;display:block" autoplay playsinline muted></video>
+    <canvas id="scanCanvas" style="display:none"></canvas>
+  `;
+
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+  }).then(stream => {
+    _stream = stream;
+    _scanning = true;
+    const video = document.getElementById('scanVideo');
+    video.srcObject = stream;
+    video.play();
+    video.onloadedmetadata = () => scanFrame();
+  }).catch(err => {
+    toast('No se pudo acceder a la cámara: ' + err.message, 'error');
+    document.getElementById('scannerCard').style.display = 'none';
+  });
+}
+
+function scanFrame() {
+  if (!_scanning) return;
+  const video = document.getElementById('scanVideo');
+  const canvas = document.getElementById('scanCanvas');
+  if (!video || !canvas || video.readyState !== 4) {
+    setTimeout(scanFrame, 100);
+    return;
+  }
+
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  try {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = window.ZXing
+      ? decodeWithZXing(canvas)
+      : null;
+    if (code) {
+      handleCode(code);
+      return;
+    }
+  } catch {}
+
+  // Intentar con BarcodeDetector nativo (Android Chrome)
+  if ('BarcodeDetector' in window) {
+    const detector = new BarcodeDetector({ formats: ['qr_code','ean_13','ean_8','code_128','code_39','upc_a','upc_e','data_matrix','pdf417'] });
+    detector.detect(video).then(codes => {
+      if (codes.length > 0 && _scanning) {
+        handleCode(codes[0].rawValue);
+      } else if (_scanning) {
+        setTimeout(scanFrame, 200);
+      }
+    }).catch(() => { if (_scanning) setTimeout(scanFrame, 200); });
+  } else {
+    setTimeout(scanFrame, 200);
+  }
+}
+
+function decodeWithZXing(canvas) {
+  try {
+    const reader = new ZXing.BrowserMultiFormatReader();
+    // ZXing sync decode no disponible en todos los builds
+    return null;
+  } catch { return null; }
+}
+
+function stopScan() {
+  _scanning = false;
+  if (_stream) {
+    _stream.getTracks().forEach(t => t.stop());
+    _stream = null;
+  }
+  document.getElementById('scannerCard').style.display = 'none';
+  document.getElementById('scannerBox').innerHTML = '';
+}
+
+function handleCode(code) {
+  stopScan();
+
+  console.log('Código escaneado:', code);
+
+  // ¿Es un QR de nota? — detectar por múltiples patrones
+  const esNota = code.includes('Folio:') || 
+                 code.includes('Cliente:') || 
+                 code.includes('TOTAL:') ||
+                 code.includes('MI NEGOCIO') ||
+                 code.includes(cfg.bizName) ||
+                 /NEGOCIO|Folio|Cliente|TOTAL/i.test(code);
+
+  if (esNota) {
+    showQRNota(code);
+    return;
+  }
+
+  // Modo: capturar código de barras para nuevo producto
+  if (scanMode === 'barcode') {
+    showTab('agregar');
+    document.getElementById('pBarcode').value = code;
+    // Buscar si ya existe
+    const existe = products.find(p => p.barcode === code);
+    if (existe) {
+      document.getElementById('pName').value = existe.name;
+      document.getElementById('pBuyPrice').value = existe.buyPrice;
+      document.getElementById('pSellPrice').value = existe.sellPrice;
+      document.getElementById('pStock').value = existe.stock;
+      calcMargen();
+      toast(`✏️ Producto existente cargado: ${existe.name}`, 'info');
+    } else {
+      toast(`✅ Código escaneado: ${code}`);
+    }
+    return;
+  }
+
+  // Buscar producto por código de barras
+  const prod = products.find(p => p.barcode && p.barcode === code);
+
+  if (scanMode === 'venta' && prod) {
+    addToCartMobile(prod.id);
+    showTab('venta');
+    toast(`✅ ${prod.name} agregado`);
+    return;
+  }
+
+  if (scanMode === 'inventario' && prod) {
+    showTab('inventario');
+    document.getElementById('invSearch').value = prod.name;
+    renderInventario();
+    showScanResult(`📦 ${prod.name}\nStock: ${prod.stock} | Venta: $${prod.sellPrice.toFixed(2)}`);
+    return;
+  }
+
+  if (scanMode === 'nota') {
+    showTab('notas');
+    document.getElementById('notaSearch').value = code;
+    renderNotas();
+    return;
+  }
+
+  // Modo multi: mostrar resultado
+  if (prod) {
+    showScanResult(`📦 <strong>${prod.name}</strong><br>Stock: ${prod.stock} piezas<br>Precio venta: <strong>$${prod.sellPrice.toFixed(2)}</strong><br>Precio compra: $${prod.buyPrice.toFixed(2)}`);
+  } else {
+    showScanResult(`🔍 Código: <strong>${code}</strong><br><small style="color:var(--muted)">Producto no encontrado — <a onclick="irACapturar('${code}')" style="color:var(--blue);font-weight:700;cursor:pointer">➕ Agregar al inventario</a></small>`);
+  }
+}
+
+function showScanResult(html) {
+  const card = document.getElementById('scanResultCard');
+  document.getElementById('scanResultContent').innerHTML = html;
+  card.style.display = '';
+}
+
+function showQRNota(qrText) {
+  console.log('QR de nota detectado:', qrText);
+  let sale = null;
+
+  // Método 1: ID completo (más confiable) — formato "ID:1234567890"
+  const idMatch = qrText.match(/ID:(\d+)/);
+  if (idMatch) {
+    sale = sales.find(s => s.id === idMatch[1]);
+  }
+
+  // Método 2: Folio parcial
+  if (!sale) {
+    const folioMatch = qrText.match(/Folio:\s*#?([A-Z0-9]+)/i);
+    if (folioMatch) {
+      const folio = folioMatch[1].toUpperCase();
+      sale = sales.find(s =>
+        s.id.slice(-8).toUpperCase() === folio ||
+        s.id.slice(-6).toUpperCase() === folio
+      );
+    }
+  }
+
+  // Método 3: Por nombre del cliente
+  if (!sale) {
+    const clienteMatch = qrText.match(/Cliente:\s*(.+?)[\n\r]/i);
+    if (clienteMatch) {
+      const nombre = clienteMatch[1].trim();
+      sale = [...sales].reverse().find(s =>
+        s.customer.toLowerCase() === nombre.toLowerCase()
+      );
+    }
+  }
+
+  // Método 4: Por total
+  if (!sale) {
+    const totalMatch = qrText.match(/TOTAL:\s*\$?([\d.]+)/i);
+    if (totalMatch) {
+      const total = parseFloat(totalMatch[1]);
+      sale = [...sales].reverse().find(s => Math.abs(s.total - total) < 0.01);
+    }
+  }
+
+  if (!sale) {
+    toast('Nota no encontrada. Busca por nombre 👇', 'error');
+    showTab('notas');
+    return;
+  }
+
+  showTab('notas');
+  document.getElementById('notasList').innerHTML = buildNotaHTML(sale);
+  document.getElementById('notaSearch').value = sale.customer;
+  toast(`📋 Nota de ${sale.customer} — $${sale.total.toFixed(2)}`);
+}
+
+// ─── INVENTARIO ───────────────────────────────────────────────────────────────
+// ─── TOP 10 MÁS VENDIDOS (MÓVIL) ─────────────────────────────────────────────
+function toggleTop10Mob() {
+  const panel = document.getElementById('top10MobPanel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+
+  const conteo = {};
+  sales.forEach(s => s.items.forEach(i => {
+    if (!conteo[i.name]) conteo[i.name] = { qty:0, total:0, stock:0 };
+    conteo[i.name].qty   += i.qty;
+    conteo[i.name].total += i.sellPrice * i.qty;
+  }));
+  products.forEach(p => { if (conteo[p.name]) conteo[p.name].stock = p.stock; });
+
+  const top10 = Object.entries(conteo).sort((a,b) => b[1].qty - a[1].qty).slice(0,10);
+  const maxQty = top10[0]?.[1].qty || 1;
+  const medallas = ['🥇','🥈','🥉'];
+
+  if (!top10.length) {
+    document.getElementById('top10MobList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Sin ventas registradas</div>';
+    panel.style.display = '';
+    return;
+  }
+
+  document.getElementById('top10MobList').innerHTML = top10.map(([name, data], i) => {
+    const pct = Math.round(data.qty / maxQty * 100);
+    const stockColor = data.stock === 0 ? 'var(--red)' : data.stock <= 10 ? 'var(--orange)' : 'var(--green)';
+    const stockIcon  = data.stock === 0 ? '🔴 Sin stock' : data.stock <= 10 ? '⚠️ ' + data.stock + ' pzs' : '✅ ' + data.stock + ' pzs';
+    return `<div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-weight:700;font-size:14px">
+          ${medallas[i] || (i+1)+'.'} ${name}
+        </div>
+        <div style="font-weight:800;font-size:14px;color:var(--blue)">${data.qty} pzs</div>
+      </div>
+      <div style="background:#e5e7eb;border-radius:99px;height:6px;margin-bottom:6px">
+        <div style="width:${pct}%;background:#f59e0b;height:6px;border-radius:99px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px">
+        <span style="color:${stockColor};font-weight:700">${stockIcon}</span>
+        <span style="color:var(--green);font-weight:700">$${data.total.toFixed(2)} vendido</span>
+      </div>
+    </div>`;
+  }).join('') + '<div style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:center">🔴 Sin stock / ⚠️ Bajo = necesita surtirse</div>';
+
+  panel.style.display = '';
+}
+
+function renderInventario() {
+  const q = (document.getElementById('invSearch')?.value || '').toLowerCase();
+  const list = q
+    ? products.filter(p => p.name.toLowerCase().includes(q) || (p.barcode || '').includes(q))
+    : products;
+
+  const el = document.getElementById('invList');
+  if (!el) return;
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">📦</div><p>${products.length ? 'Sin resultados' : 'Sin productos'}</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="card">${list.map(p => {
+    const stockTag = p.stock === 0
+      ? '<span class="tag tag-red">Sin stock</span>'
+      : p.stock <= 3
+      ? `<span class="tag tag-orange">⚠ ${p.stock} piezas</span>`
+      : `<span class="tag tag-green">${p.stock} piezas</span>`;
+    return `<div class="product-item">
+      <div style="flex:1">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">${p.barcode ? `Cód: ${p.barcode} · ` : ''}Compra: $${p.buyPrice.toFixed(2)} · ${stockTag}</div>
+      </div>
+      <div class="product-price">$${p.sellPrice.toFixed(2)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ─── VENTA MÓVIL ──────────────────────────────────────────────────────────────
+function searchVenta() {
+  const q = document.getElementById('ventaSearch').value.toLowerCase();
+  const res = document.getElementById('ventaSearchResults');
+  if (!q) { res.style.display = 'none'; return; }
+
+  const found = products.filter(p =>
+    p.name.toLowerCase().includes(q) || (p.barcode || '').includes(q)
+  );
+
+  if (!found.length) { res.style.display = 'none'; return; }
+
+  res.innerHTML = found.map(p => `
+    <div onclick="addToCartMobile('${p.id}')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation">
+      <div>
+        <div style="font-weight:700;font-size:14px">${p.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${p.stock > 0 ? `Stock: ${p.stock}` : 'Sin stock'}</div>
+      </div>
+      <div style="font-weight:800;color:var(--blue);font-size:15px">$${p.sellPrice.toFixed(2)}</div>
+    </div>
+  `).join('');
+  res.style.display = '';
+}
+
+function addToCartMobile(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  if (p.stock <= 0) { toast('Sin stock', 'error'); return; }
+
+  const ex = cart.find(i => i.id === id);
+  if (ex) {
+    if (ex.qty >= p.stock) { toast('No hay más stock', 'error'); return; }
+    ex.qty++;
+  } else {
+    cart.push({ id: p.id, name: p.name, buyPrice: p.buyPrice, sellPrice: p.sellPrice, qty: 1, stock: p.stock });
+  }
+
+  document.getElementById('ventaSearch').value = '';
+  document.getElementById('ventaSearchResults').style.display = 'none';
+  updateCartUI();
+  toast(`✅ ${p.name} agregado`);
+}
+
+function updateCartUI() {
+  const el = document.getElementById('cartList');
+  const bar = document.getElementById('summaryBar');
+  const totalEl = document.getElementById('cartTotal');
+  if (!el) return;
+
+  if (!cart.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">🛒</div><p>Agrega productos</p></div>';
+    bar.style.display = 'none';
+    return;
+  }
+
+  const total = cart.reduce((s, i) => s + i.sellPrice * i.qty, 0);
+  totalEl.textContent = '$' + total.toFixed(2);
+  bar.style.display = '';
+
+  el.innerHTML = cart.map(i => `
+    <div class="cart-item">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${i.name}</div>
+        <div style="font-size:12px;color:var(--muted)">$${i.sellPrice.toFixed(2)} c/u → $${(i.sellPrice * i.qty).toFixed(2)}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQtyMobile('${i.id}', -1)">−</button>
+        <span class="qty-num">${i.qty}</span>
+        <button class="qty-btn" onclick="changeQtyMobile('${i.id}', 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQtyMobile(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  const newQty = item.qty + delta;
+  if (newQty <= 0) { cart = cart.filter(i => i.id !== id); }
+  else if (newQty > item.stock) { toast('Sin más stock', 'error'); return; }
+  else { item.qty = newQty; }
+  updateCartUI();
+}
+
+function waNumNuevoMobEnviar() {
+  const num = document.getElementById('waNumNuevoMob').value.trim().replace(/\D/g,'');
+  if (num.length !== 10) { toast('Escribe los 10 dígitos del número', 'error'); return; }
+
+  const customer = document.getElementById('ventaCliente').value.trim();
+  if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
+
+  // Guardar la venta en historial automáticamente
+  const total  = cart.reduce((s,i) => s + i.sellPrice*i.qty, 0);
+  const profit = cart.reduce((s,i) => s + (i.sellPrice-i.buyPrice)*i.qty, 0);
+  const sale = {
+    id: Date.now().toString(),
+    date: new Date().toISOString(),
+    customer,
+    phone: num,
+    items: cart.map(i => ({...i})),
+    total, profit, inCut: false,
+  };
+
+  // Guardar cliente
+  if (!cfg.customers) cfg.customers = [];
+  if (!cfg.customers.includes(customer)) cfg.customers.push(customer);
+
+  // Descontar stock
+  products = products.map(p => {
+    const ci = cart.find(i => i.id === p.id);
+    return ci ? {...p, stock: p.stock - ci.qty} : p;
+  });
+
+  sales.push(sale);
+  saveData();
+
+  // Limpiar carrito
+  cart = [];
+  document.getElementById('ventaCliente').value = '';
+  updateCartUI();
+  renderInventario();
+
+  // Construir mensaje y abrir WhatsApp app
+  const lineas = sale.items.map(i => `• ${i.name} x${i.qty} — $${(i.sellPrice*i.qty).toFixed(2)}`).join('\n');
+  const msg = `🏪 *${cfg.bizName || 'MI NEGOCIO'}*\n📅 ${new Date(sale.date).toLocaleDateString('es-MX')}\n👤 *${sale.customer}*\n\n${lineas}\n\n━━━━━━━━━━━━━\n💰 *TOTAL: $${sale.total.toFixed(2)}*\n━━━━━━━━━━━━━\n${cfg.msg || '¡Gracias por su compra!'}`;
+
+  document.getElementById('waNumNuevoMob').value = '';
+  toast('✅ Venta guardada — abriendo WhatsApp');
+  setTimeout(() => {
+    window.location.href = `whatsapp://send?phone=52${num}&text=${encodeURIComponent(msg)}`;
+  }, 500);
+}
+
+async function completarVenta() {
+  const customer = document.getElementById('ventaCliente').value.trim();
+  if (!customer) { toast('Escribe el nombre de la clienta', 'error'); return; }
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
+
+  const total  = cart.reduce((s, i) => s + i.sellPrice * i.qty, 0);
+  const profit = cart.reduce((s, i) => s + (i.sellPrice - i.buyPrice) * i.qty, 0);
+
+  const sale = {
+    id: Date.now().toString(),
+    date: new Date().toISOString(),
+    customer,
+    items: cart.map(i => ({ ...i })),
+    total, profit, inCut: false,
+    qrData: `ID:${Date.now().toString()}\nFolio: #${Date.now().toString().slice(-8).toUpperCase()}\nCliente: ${customer}\nTOTAL: $${total.toFixed(2)}`
+  };
+
+  // Descontar stock
+  products = products.map(p => {
+    const ci = cart.find(i => i.id === p.id);
+    return ci ? { ...p, stock: p.stock - ci.qty } : p;
+  });
+
+  sales.push(sale);
+  await saveData();
+
+  // WhatsApp
+  const lineas = sale.items.map(i => `• ${i.name} ×${i.qty} — $${(i.sellPrice * i.qty).toFixed(2)}`).join('\n');
+  const msg = `🏪 *${cfg.bizName || 'MI NEGOCIO'}*\n📅 ${new Date(sale.date).toLocaleDateString('es-MX')}\n👤 *Cliente: ${sale.customer}*\n\n${lineas}\n\n━━━━━━━━━━━━━\n💰 *TOTAL: $${sale.total.toFixed(2)}*\n━━━━━━━━━━━━━\n${cfg.msg || '¡Gracias por su compra!'}`;
+
+  cart = [];
+  document.getElementById('ventaCliente').value = '';
+  updateCartUI();
+  renderInventario();
+
+  toast('✅ Venta guardada');
+  setTimeout(() => {
+    if (confirm('¿Enviar por WhatsApp?')) {
+      window.location.href = 'whatsapp://send?text=' + encodeURIComponent(msg);
+    }
+  }, 500);
+}
+
+// ─── NOTAS ────────────────────────────────────────────────────────────────────
+function renderNotas() {
+  const q = (document.getElementById('notaSearch')?.value || '').toLowerCase();
+  const el = document.getElementById('notasList');
+  if (!el) return;
+
+  const list = q
+    ? [...sales].reverse().filter(s => s.customer.toLowerCase().includes(q))
+    : [...sales].reverse().slice(0, 20);
+
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">📋</div><p>Sin notas</p></div>';
+    return;
+  }
+
+  el.innerHTML = list.map(s => buildNotaHTML(s)).join('');
+}
+
+function buildNotaHTML(s) {
+  const d = new Date(s.date);
+  const rows = s.items.map(i => `
+    <tr>
+      <td>${i.name}</td>
+      <td style="text-align:center">${i.qty}</td>
+      <td style="text-align:right">$${i.sellPrice.toFixed(2)}</td>
+      <td style="text-align:right;font-weight:700">$${(i.sellPrice * i.qty).toFixed(2)}</td>
+    </tr>
+  `).join('');
+
+  return `<div class="card" style="margin-bottom:12px">
+    <div class="nota-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="nota-cliente">${s.customer}</div>
+          <div class="nota-meta">${d.toLocaleDateString('es-MX')} ${d.toLocaleTimeString('es-MX')} · #${s.id.slice(-6).toUpperCase()}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="nota-total">$${s.total.toFixed(2)}</div>
+          <div style="font-size:11px;color:var(--green)">+$${s.profit.toFixed(2)}</div>
+        </div>
+      </div>
+    </div>
+    <table class="nota-table">
+      <thead><tr><th>Producto</th><th style="text-align:center">Cant</th><th style="text-align:right">P.Unit</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-wa btn-sm" onclick="waShare('${s.id}')">📲 WhatsApp</button>
+      <button class="btn btn-sm" style="background:var(--blue);color:white;width:auto;margin:0" onclick="generarPDFNota('${s.id}')">📄 PDF</button>
+    </div>
+  </div>`;
+}
+
+function waShare(saleId) {
+  const s = sales.find(x => x.id === saleId);
+  if (!s) return;
+  const lineas = s.items.map(i => `• ${i.name} ×${i.qty} — $${(i.sellPrice * i.qty).toFixed(2)}`).join('\n');
+  const msg = `🏪 *${cfg.bizName}*\n📅 ${new Date(s.date).toLocaleDateString('es-MX')}\n👤 *${s.customer}*\n\n${lineas}\n\n━━━━━━━━━━━━━\n💰 *TOTAL: $${s.total.toFixed(2)}*\n━━━━━━━━━━━━━\n${cfg.msg || '¡Gracias por su compra!'}`;
+  window.location.href = 'whatsapp://send?text=' + encodeURIComponent(msg);
+}
+
+// ─── PDF MÓVIL ────────────────────────────────────────────────────────────────
+function generarPDFNota(saleId) {
+  const sale = sales.find(s => s.id === saleId);
+  if (!sale) { toast('Nota no encontrada', 'error'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
+  const W = 216, PL = 20, PR = 20;
+  let y = 20;
+  const ln = (h=5) => { y += h; };
+
+  // Encabezado
+  doc.setFontSize(22); doc.setFont('helvetica','bold');
+  doc.text(cfg.bizName || 'MI NEGOCIO', W/2, y, {align:'center'}); ln(8);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  if (cfg.address) { doc.text(cfg.address, W/2, y, {align:'center'}); ln(5); }
+  if (cfg.phone)   { doc.text('Tel: ' + cfg.phone, W/2, y, {align:'center'}); ln(5); }
+  ln(2); doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+
+  // Datos
+  const d = new Date(sale.date);
+  doc.setFontSize(10);
+  doc.text(`Fecha: ${d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`, PL, y); ln(5);
+  doc.text(`Hora:  ${d.toLocaleTimeString('es-MX')}`, PL, y); ln(5);
+  doc.text(`Folio: #${sale.id.slice(-8).toUpperCase()}`, PL, y); ln(5);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text(`Cliente: ${sale.customer}`, PL, y); ln(7);
+  doc.setFont('helvetica','normal');
+  doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+
+  // Tabla
+  doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('PRODUCTO', PL, y);
+  doc.text('CANT',   PL+95, y, {align:'center'});
+  doc.text('P.UNIT.', PL+125, y, {align:'center'});
+  doc.text('SUBTOTAL', W-PR, y, {align:'right'});
+  ln(4); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(5);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  sale.items.forEach(item => {
+    const name = item.name.length > 40 ? item.name.slice(0,40)+'…' : item.name;
+    doc.text(name, PL, y);
+    doc.text(String(item.qty), PL+95, y, {align:'center'});
+    doc.text(`$${item.sellPrice.toFixed(2)}`, PL+125, y, {align:'center'});
+    doc.text(`$${(item.sellPrice*item.qty).toFixed(2)}`, W-PR, y, {align:'right'});
+    ln(7);
+  });
+
+  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.text('Subtotal:', W-PR-65, y);
+  doc.text(`$${sale.total.toFixed(2)}`, W-PR, y, {align:'right'}); ln(7);
+  doc.setLineWidth(0.5); doc.line(W-PR-80, y, W-PR, y); ln(4);
+  doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text('TOTAL A PAGAR:', W-PR-85, y);
+  doc.text(`$${sale.total.toFixed(2)}`, W-PR, y, {align:'right'}); ln(12);
+
+  doc.setFont('helvetica','italic'); doc.setFontSize(11);
+  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'});
+
+  doc.save(`ticket_${sale.customer.replace(/\s+/g,'_')}_${sale.id.slice(-6)}.pdf`);
+  toast('📄 PDF descargado');
+}
+
+// ─── REPORTES DE VENTAS (MÓVIL) ───────────────────────────────────────────────
+let _chartMob = null;
+let _reportePeriodo = '';
+let _reporteData = {};
+
+function toggleReporteMenu() {
+  const m = document.getElementById('reporteMenu');
+  m.style.display = m.style.display === 'none' ? '' : 'none';
+}
+
+function cerrarReporte() {
+  document.getElementById('reporteContainer').style.display = 'none';
+  if (_chartMob) { _chartMob.destroy(); _chartMob = null; }
+}
+
+function generarReporteMob(periodo) {
+  _reportePeriodo = periodo;
+  document.getElementById('reporteMenu').style.display = 'none';
+  document.getElementById('reporteContainer').style.display = '';
+  if (_chartMob) { _chartMob.destroy(); _chartMob = null; }
+
+  const ahora = new Date();
+
+  if (periodo === 'semanal') {
+    // Últimas 4 semanas
+    const semanas = [];
+    for (let i = 3; i >= 0; i--) {
+      const ini = new Date(ahora); ini.setDate(ahora.getDate() - (i+1)*7);
+      const fin = new Date(ahora); fin.setDate(ahora.getDate() - i*7);
+      const ventasSem = sales.filter(s => {
+        const d = new Date(s.date); return d >= ini && d < fin;
+      });
+      semanas.push({
+        label: i === 0 ? 'Esta semana' : `Hace ${i} sem`,
+        total: ventasSem.reduce((a,s) => a+s.total, 0),
+        ventas: ventasSem.length
+      });
+    }
+    _reporteData = { semanas };
+    document.getElementById('reporteTitulo').textContent = '📅 Reporte Semanal';
+    mostrarEstadsMob(semanas);
+    mostrarGraficaMob(
+      semanas.map(s => s.label),
+      semanas.map(s => s.total),
+      'Ventas por semana', '#1d4ed8'
+    );
+    document.getElementById('reporteTop10').style.display = 'none';
+
+  } else if (periodo === 'mensual') {
+    // Últimos 6 meses
+    const meses = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      const fin = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      const ventasMes = sales.filter(s => {
+        const sd = new Date(s.date); return sd >= d && sd < fin;
+      });
+      meses.push({
+        label: d.toLocaleDateString('es-MX', {month:'short', year:'2-digit'}),
+        total: ventasMes.reduce((a,s) => a+s.total, 0),
+        ventas: ventasMes.length
+      });
+    }
+    _reporteData = { meses };
+    document.getElementById('reporteTitulo').textContent = '📆 Reporte Mensual';
+    mostrarEstadsMob(meses);
+    mostrarGraficaMob(
+      meses.map(m => m.label),
+      meses.map(m => m.total),
+      'Ventas por mes', '#16a34a'
+    );
+    mostrarTop10Mob();
+
+  } else if (periodo === 'anual') {
+    // Por año
+    const porAnio = {};
+    sales.forEach(s => {
+      const anio = new Date(s.date).getFullYear();
+      if (!porAnio[anio]) porAnio[anio] = { total:0, ventas:0 };
+      porAnio[anio].total  += s.total;
+      porAnio[anio].ventas += 1;
+    });
+    const anios = Object.keys(porAnio).sort().map(a => ({
+      label: a,
+      total: porAnio[a].total,
+      ventas: porAnio[a].ventas
+    }));
+    _reporteData = { anios };
+    document.getElementById('reporteTitulo').textContent = '📈 Reporte Anual';
+    mostrarEstadsMob(anios);
+    mostrarGraficaMob(
+      anios.map(a => a.label),
+      anios.map(a => a.total),
+      'Ventas por año', '#7c3aed'
+    );
+    mostrarTop10Mob();
+  }
+}
+
+function mostrarEstadsMob(datos) {
+  const totalVentas  = datos.reduce((a,d) => a+d.ventas, 0);
+  const totalDinero  = datos.reduce((a,d) => a+d.total,  0);
+  const mejorPeriodo = datos.reduce((a,b) => a.total > b.total ? a : b, datos[0] || {label:'-',total:0});
+  document.getElementById('reporteStats').innerHTML = `
+    <div style="background:#eff6ff;border-radius:8px;padding:10px 6px">
+      <div style="font-size:18px;font-weight:900;color:#1d4ed8">${totalVentas}</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Ventas</div>
+    </div>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px 6px">
+      <div style="font-size:14px;font-weight:900;color:#16a34a">$${totalDinero.toFixed(0)}</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Total</div>
+    </div>
+    <div style="background:#fdf4ff;border-radius:8px;padding:10px 6px">
+      <div style="font-size:12px;font-weight:900;color:#7c3aed">${mejorPeriodo.label}</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Mejor</div>
+    </div>`;
+}
+
+function mostrarGraficaMob(labels, datos, titulo, color) {
+  const ctx = document.getElementById('chartMob').getContext('2d');
+  _chartMob = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: titulo,
+        data: datos,
+        backgroundColor: color + 'cc',
+        borderColor: color,
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => '$' + v } }
+      }
+    }
+  });
+}
+
+function mostrarTop10Mob() {
+  // Contar piezas vendidas por producto
+  const conteo = {};
+  sales.forEach(s => {
+    s.items.forEach(i => {
+      if (!conteo[i.name]) conteo[i.name] = { qty: 0, total: 0 };
+      conteo[i.name].qty   += i.qty;
+      conteo[i.name].total += i.sellPrice * i.qty;
+    });
+  });
+
+  const top10 = Object.entries(conteo)
+    .sort((a,b) => b[1].qty - a[1].qty)
+    .slice(0, 10);
+
+  const maxQty = top10[0]?.[1].qty || 1;
+
+  document.getElementById('reporteTop10').style.display = '';
+  document.getElementById('top10List').innerHTML = top10.map(([name, data], i) => `
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-weight:700;font-size:13px;flex:1">
+          <span style="color:${i < 3 ? '#f59e0b' : 'var(--muted)'};margin-right:6px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`}</span>
+          ${name}
+        </div>
+        <div style="font-weight:800;font-size:13px;color:var(--blue)">$${data.total.toFixed(2)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;background:#e5e7eb;border-radius:99px;height:6px">
+          <div style="width:${Math.round(data.qty/maxQty*100)}%;background:var(--blue);height:6px;border-radius:99px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);white-space:nowrap">${data.qty} pzs</div>
+      </div>
+    </div>`).join('');
+}
+
+function reportePDFMob() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
+  const W = 216, PL = 20, PR = 20;
+  let y = 20;
+  const ln = (h=5) => { y += h; };
+
+  // Encabezado
+  doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);
+  doc.text(cfg.bizName || 'MI NEGOCIO', W/2, y, {align:'center'}); ln(8);
+  doc.setFontSize(12); doc.setFont('helvetica','normal');
+  doc.text(document.getElementById('reporteTitulo').textContent, W/2, y, {align:'center'}); ln(6);
+  doc.setFontSize(9); doc.setTextColor(120,120,120);
+  doc.text('Generado: ' + new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'}), W/2, y, {align:'center'});
+  doc.setTextColor(0,0,0); ln(8);
+  doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(6);
+
+  // Datos según período
+  let filas = [];
+  if (_reportePeriodo === 'semanal' && _reporteData.semanas) filas = _reporteData.semanas;
+  if (_reportePeriodo === 'mensual' && _reporteData.meses)   filas = _reporteData.meses;
+  if (_reportePeriodo === 'anual'   && _reporteData.anios)   filas = _reporteData.anios;
+
+  // Tabla resumen
+  doc.setFillColor(25,55,170); doc.rect(PL, y-4, W-PL-PR, 10, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('PERÍODO', PL+4, y+2);
+  doc.text('VENTAS', PL+90, y+2, {align:'center'});
+  doc.text('TOTAL', W-PR, y+2, {align:'right'});
+  ln(9); doc.setTextColor(0,0,0);
+
+  filas.forEach((f, i) => {
+    if (i%2===0) { doc.setFillColor(248,250,255); doc.rect(PL,y-3,W-PL-PR,9,'F'); }
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.text(f.label, PL+4, y);
+    doc.setTextColor(80,80,80);
+    doc.text(String(f.ventas), PL+90, y, {align:'center'});
+    doc.setFont('helvetica','bold'); doc.setTextColor(29,78,216);
+    doc.text('$'+f.total.toFixed(2), W-PR, y, {align:'right'});
+    doc.setTextColor(0,0,0);
+    doc.setDrawColor(210,215,230); doc.setLineWidth(0.1);
+    doc.line(PL, y+4, W-PR, y+4); doc.setDrawColor(0);
+    ln(9);
+  });
+
+  // Top 10
+  const conteo = {};
+  sales.forEach(s => s.items.forEach(i => {
+    if (!conteo[i.name]) conteo[i.name] = { qty:0, total:0 };
+    conteo[i.name].qty   += i.qty;
+    conteo[i.name].total += i.sellPrice * i.qty;
+  }));
+  const top10 = Object.entries(conteo).sort((a,b) => b[1].qty-a[1].qty).slice(0,10);
+
+  if (top10.length && (_reportePeriodo === 'mensual' || _reportePeriodo === 'anual')) {
+    ln(4); doc.setLineWidth(0.4); doc.line(PL,y,W-PR,y); ln(6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(0,0,0);
+    doc.text('TOP 10 — PRODUCTOS MÁS VENDIDOS', PL, y); ln(7);
+    doc.setFillColor(25,55,170); doc.rect(PL, y-4, W-PL-PR, 10, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(9);
+    doc.text('#', PL+4, y+2);
+    doc.text('PRODUCTO', PL+14, y+2);
+    doc.text('PIEZAS', PL+120, y+2, {align:'center'});
+    doc.text('TOTAL', W-PR, y+2, {align:'right'});
+    ln(9); doc.setTextColor(0,0,0);
+    top10.forEach(([name, data], i) => {
+      if (y > 248) { doc.addPage(); y = 20; }
+      if (i%2===0) { doc.setFillColor(248,250,255); doc.rect(PL,y-3,W-PL-PR,9,'F'); }
+      doc.setFont('helvetica', i<3?'bold':'normal'); doc.setFontSize(9);
+      doc.setTextColor(i===0?180:i===1?100:i===2?150:80, i===0?120:i===1?100:i===2?100:80, 0);
+      doc.text(String(i+1), PL+4, y);
+      doc.setTextColor(30,30,30);
+      const n = name.length>38?name.slice(0,38)+'...':name;
+      doc.text(n, PL+14, y);
+      doc.setTextColor(80,80,80);
+      doc.text(String(data.qty)+' pzs', PL+120, y, {align:'center'});
+      doc.setFont('helvetica','bold'); doc.setTextColor(29,78,216);
+      doc.text('$'+data.total.toFixed(2), W-PR, y, {align:'right'});
+      doc.setTextColor(0,0,0);
+      doc.setDrawColor(210,215,230); doc.setLineWidth(0.1);
+      doc.line(PL,y+4,W-PR,y+4); doc.setDrawColor(0); ln(9);
+    });
+  }
+
+  doc.setTextColor(150,150,150); doc.setFont('helvetica','italic'); doc.setFontSize(8);
+  doc.text((cfg.bizName||'MI NEGOCIO')+' — Reporte generado automaticamente', W/2, 272, {align:'center'});
+  doc.save('reporte_ventas_'+_reportePeriodo+'_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.pdf');
+  toast('PDF descargado');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.className = '', 3000);
+}
+
+// ─── IA: ANALIZAR FOTO DE PRODUCTO ───────────────────────────────────────────
+function getKey() {
+  const p1 = 'sk-ant-api03-';
+  const p2 = 'kwlpwgCz0l8_YJxAFbYyD-risL1rVGDwFuUUcn6RVbt';
+  const p3 = 'QL28o681vi-sbwJdnIwat7So5SSYU1JxgG-_EhWDzeQ-BRavqwAA';
+  return p1 + p2 + p3;
+}
+
+async function analizarFotoProducto(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Mostrar preview de la foto
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+
+    // Mostrar imagen
+    document.getElementById('fotoImg').src = base64;
+    document.getElementById('fotoPreview').style.display = '';
+
+    // Estado: analizando
+    const status = document.getElementById('iaStatus');
+    status.style.display = '';
+    status.style.background = '#eff6ff';
+    status.style.color = '#1d4ed8';
+    status.style.border = '1.5px solid #1d4ed8';
+    status.innerHTML = '🤖 Analizando producto con IA...';
+
+    // Deshabilitar botón
+    document.getElementById('btnFotoIA').disabled = true;
+    document.getElementById('btnFotoIA').style.opacity = '0.6';
+
+    try {
+      // Llamar a Claude API
+      const imageData = base64.split(',')[1];
+      const mediaType = file.type || 'image/jpeg';
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': getKey(),
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 300,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: mediaType, data: imageData }
+              },
+              {
+                type: 'text',
+                text: `Analiza este producto y responde SOLO con un JSON sin explicaciones ni markdown:
+{"marca":"nombre de la marca","nombre":"nombre del producto sin marca ni contenido","contenido":"cantidad y unidad como 170g o 500ml o 1L"}
+
+Si no puedes identificar algún campo ponlo como cadena vacía. Solo el JSON, nada más.`
+              }
+            ]
+          }]
+        })
+      });
+
+      if (!response.ok) throw new Error('Error API: ' + response.status);
+
+      const data = await response.json();
+      const texto = data.content[0].text.trim();
+
+      // Parsear JSON
+      const clean = texto.replace(/```json|```/g, '').trim();
+      const info  = JSON.parse(clean);
+
+      // Llenar campos
+      if (info.marca)     document.getElementById('pMarca').value    = info.marca;
+      if (info.nombre)    document.getElementById('pName').value     = info.nombre;
+      if (info.contenido) document.getElementById('pContenido').value = info.contenido;
+
+      // Estado: éxito
+      status.style.background = '#dcfce7';
+      status.style.color = '#16a34a';
+      status.style.border = '1.5px solid #16a34a';
+      status.innerHTML = '✅ ¡Producto identificado! Revisa y ajusta si es necesario.';
+
+      // Enfocar código de barras para escanearlo
+      setTimeout(() => document.getElementById('pBarcode').focus(), 300);
+
+      if (navigator.vibrate) navigator.vibrate(100);
+
+    } catch (err) {
+      status.style.background = '#fee2e2';
+      status.style.color = '#dc2626';
+      status.style.border = '1.5px solid #dc2626';
+      status.innerHTML = '❌ No se pudo analizar. Intenta con otra foto más clara.';
+      console.error('IA error:', err);
+    }
+
+    // Re-habilitar botón
+    document.getElementById('btnFotoIA').disabled = false;
+    document.getElementById('btnFotoIA').style.opacity = '1';
+    // Limpiar input para permitir nueva foto
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── CAPTURAR PRODUCTO ────────────────────────────────────────────────────────
+function calcMargen() {
+  const buy  = parseFloat(document.getElementById('pBuyPrice').value) || 0;
+  const sell = parseFloat(document.getElementById('pSellPrice').value) || 0;
+  const div  = document.getElementById('pMargen');
+  if (buy > 0 && sell > 0) {
+    const u = sell - buy, pct = Math.round(u / buy * 100);
+    div.textContent = `Utilidad: $${u.toFixed(2)} (${pct}%)`;
+    div.style.display = '';
+    div.style.background = u >= 0 ? 'var(--green-light)' : 'var(--red-light)';
+    div.style.color       = u >= 0 ? 'var(--green)'       : 'var(--red)';
+    div.style.borderColor = u >= 0 ? 'var(--green)'       : 'var(--red)';
+  } else {
+    div.style.display = 'none';
+  }
+}
+
+async function guardarProducto() {
+  const barcode   = document.getElementById('pBarcode').value.trim();
+  const marca     = document.getElementById('pMarca').value.trim();
+  const nombre    = document.getElementById('pName').value.trim();
+  const contenido = document.getElementById('pContenido').value.trim();
+  const buyPrice  = parseFloat(document.getElementById('pBuyPrice').value)  || 0;
+  const sellPrice = parseFloat(document.getElementById('pSellPrice').value) || 0;
+  const stock     = parseInt(document.getElementById('pStock').value)        || 0;
+
+  if (!nombre) { toast('El nombre es requerido', 'error'); return; }
+  if (!sellPrice) { toast('El precio de venta es requerido', 'error'); return; }
+
+  // Construir nombre completo: "Marca Nombre Contenido"
+  const nameFull = [marca, nombre, contenido].filter(Boolean).join(' ');
+
+  // Ver si ya existe por barcode
+  const existeIdx = barcode ? products.findIndex(p => p.barcode === barcode) : -1;
+
+  if (existeIdx >= 0) {
+    products[existeIdx] = { ...products[existeIdx], barcode, name: nameFull, buyPrice, sellPrice, stock };
+    toast('✅ Producto actualizado');
+  } else {
+    products.push({ id: Date.now().toString(), barcode, name: nameFull, buyPrice, sellPrice, stock });
+    toast('✅ Producto agregado al inventario');
+  }
+
+  await saveData();
+  limpiarFormProducto();
+  renderUltimosProductos();
+  renderInventario();
+}
+
+function limpiarFormProducto() {
+  ['pBarcode','pMarca','pName','pContenido','pBuyPrice','pSellPrice','pStock'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('pMargen').style.display = 'none';
+  document.getElementById('iaStatus').style.display = 'none';
+  document.getElementById('fotoPreview').style.display = 'none';
+}
+
+function irACapturar(barcode) {
+  showTab('agregar');
+  document.getElementById('pBarcode').value = barcode;
+  toast('Agrega los datos del producto 👆', 'info');
+}
+
+function renderUltimosProductos() {
+  const el = document.getElementById('ultimosProductos');
+  if (!el) return;
+  const lista = [...products].reverse().slice(0, 5);
+  if (!lista.length) {
+    el.innerHTML = '<div class="empty" style="padding:20px"><p>Sin productos aún</p></div>';
+    return;
+  }
+  el.innerHTML = lista.map(p => `
+    <div class="product-item" onclick="editarProducto('${p.id}')" style="cursor:pointer">
+      <div style="flex:1">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">${p.barcode ? `Cód: ${p.barcode} · ` : ''}Stock: ${p.stock}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="product-price">$${p.sellPrice.toFixed(2)}</div>
+        <div style="font-size:10px;color:var(--muted)">✏️ Editar</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function editarProducto(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pBarcode').value   = p.barcode   || '';
+  document.getElementById('pName').value      = p.name      || '';
+  document.getElementById('pMarca').value     = '';
+  document.getElementById('pContenido').value = '';
+  document.getElementById('pBuyPrice').value  = p.buyPrice  || '';
+  document.getElementById('pSellPrice').value = p.sellPrice || '';
+  document.getElementById('pStock').value     = p.stock     || '';
+  calcMargen();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toast('✏️ Editando: ' + p.name, 'info');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
