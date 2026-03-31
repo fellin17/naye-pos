@@ -1114,58 +1114,95 @@ function generarPDFNota(saleId) {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
-  const W = 216, PL = 20, PR = 20;
-  let y = 20;
-  const ln = (h=5) => { y += h; };
+  const W = 216, PL = 18, PR = 18;
+  let y = 14;
+  const ln = (h) => { y += h; };
+  const fmt = v => '$' + (v||0).toFixed(2);
 
-  // Encabezado
-  doc.setFontSize(22); doc.setFont('helvetica','bold');
-  doc.text(cfg.bizName || 'MI NEGOCIO', W/2, y, {align:'center'}); ln(8);
-  doc.setFontSize(10); doc.setFont('helvetica','normal');
-  if (cfg.address) { doc.text(cfg.address, W/2, y, {align:'center'}); ln(5); }
-  if (cfg.phone)   { doc.text('Tel: ' + cfg.phone, W/2, y, {align:'center'}); ln(5); }
-  ln(2); doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+  // Config tamaños (usa mismos cfg que PC)
+  const nameSize  = cfg.headerNameSize  || 20;
+  const dataSize  = cfg.headerDataSize  || 9;
+  const bodySize  = cfg.ticketBodySize  || 10;
+  const lineH     = cfg.ticketLineH     || 5.5;
+  const nameBold  = cfg.headerNameBold  !== false;
+  const nameItal  = cfg.headerNameItalic === true;
+  const jsPdfFont = nameBold && nameItal ? 'bolditalic' : nameBold ? 'bold' : nameItal ? 'italic' : 'normal';
 
-  // Datos
+  // ── ENCABEZADO: Logo IZQUIERDA + Datos DERECHA ──
+  const logoSize = 26;
+  const logoX = PL;
+  const dataX = PL + logoSize + 5;
+  const yStart = y;
+
+  if (cfg.headerLogo) {
+    try { doc.addImage(cfg.headerLogo, 'JPEG', logoX, y, logoSize, logoSize); } catch {}
+  }
+
+  doc.setFontSize(nameSize); doc.setFont('helvetica', jsPdfFont);
+  doc.text(cfg.bizName || 'MI NEGOCIO', dataX, y + 7);
+  let yData = y + 7 + nameSize * 0.38;
+
+  doc.setFontSize(dataSize); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  if (cfg.address) { doc.text(cfg.address, dataX, yData); yData += dataSize * 0.55; }
+  if (cfg.phone)   { doc.text('Tel: ' + cfg.phone, dataX, yData); yData += dataSize * 0.55; }
+  if (cfg.rfc)     { doc.text('RFC: ' + cfg.rfc, dataX, yData); yData += dataSize * 0.55; }
+  doc.setTextColor(0,0,0);
+
+  y = Math.max(yStart + logoSize + 3, yData + 2);
+  doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(4);
+
+  // ── Datos de la venta ──
   const d = new Date(sale.date);
-  doc.setFontSize(10);
-  doc.text(`Fecha: ${d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`, PL, y); ln(5);
-  doc.text(`Hora:  ${d.toLocaleTimeString('es-MX')}`, PL, y); ln(5);
-  doc.text(`Folio: #${sale.id.slice(-8).toUpperCase()}`, PL, y); ln(5);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  doc.text(`Cliente: ${sale.customer}`, PL, y); ln(7);
-  doc.setFont('helvetica','normal');
-  doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  const fechaStr = d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  doc.text(`Fecha: ${fechaStr}`, PL, y);
+  doc.text(`Hora: ${d.toLocaleTimeString('es-MX')}`, W-PR, y, {align:'right'}); ln(4.5);
+  doc.text(`Folio: #${sale.id.slice(-8).toUpperCase()}`, PL, y);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text(`Cliente: ${sale.customer}`, W-PR, y, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); ln(4);
+  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(4);
 
-  // Tabla
-  doc.setFontSize(10); doc.setFont('helvetica','bold');
+  // ── Encabezado tabla ──
+  doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
   doc.text('PRODUCTO', PL, y);
-  doc.text('CANT',   PL+95, y, {align:'center'});
-  doc.text('P.UNIT.', PL+125, y, {align:'center'});
+  doc.text('CANT',    PL+98, y, {align:'center'});
+  doc.text('P.UNIT.', PL+128, y, {align:'center'});
   doc.text('SUBTOTAL', W-PR, y, {align:'right'});
-  ln(4); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(5);
+  ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
-  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  // ── Filas de productos ──
+  doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
-    const name = item.name.length > 40 ? item.name.slice(0,40)+'…' : item.name;
-    doc.text(name, PL, y);
-    doc.text(String(item.qty), PL+95, y, {align:'center'});
-    doc.text(`$${item.sellPrice.toFixed(2)}`, PL+125, y, {align:'center'});
-    doc.text(`$${(item.sellPrice*item.qty).toFixed(2)}`, W-PR, y, {align:'right'});
-    ln(7);
+    const maxChars = Math.floor(85 / (bodySize * 0.42));
+    const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
+    doc.text(name,                           PL,      y);
+    doc.text(String(item.qty),               PL+98,   y, {align:'center'});
+    doc.text(fmt(item.sellPrice),            PL+128,  y, {align:'center'});
+    doc.setFont('helvetica','bold');
+    doc.text(fmt(item.sellPrice * item.qty), W-PR,    y, {align:'right'});
+    doc.setFont('helvetica','normal');
+    ln(lineH);
   });
 
   doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
-  doc.setFontSize(11); doc.setFont('helvetica','normal');
-  doc.text('Subtotal:', W-PR-65, y);
-  doc.text(`$${sale.total.toFixed(2)}`, W-PR, y, {align:'right'}); ln(7);
-  doc.setLineWidth(0.5); doc.line(W-PR-80, y, W-PR, y); ln(4);
+
+  // ── Totales ──
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('Subtotal:', W-PR-60, y);
+  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(4);
+  doc.text(`No. artículos: ${sale.items.reduce((a,i)=>a+i.qty,0)}`, PL, y);
+  doc.setLineWidth(0.7); doc.line(W-PR-85, y, W-PR, y); ln(5);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
   doc.text('TOTAL A PAGAR:', W-PR-85, y);
-  doc.text(`$${sale.total.toFixed(2)}`, W-PR, y, {align:'right'}); ln(12);
+  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(10);
 
-  doc.setFont('helvetica','italic'); doc.setFontSize(11);
-  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'});
+  // ── Pie de página ──
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(60,60,60);
+  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'});
 
   doc.save(`ticket_${sale.customer.replace(/\s+/g,'_')}_${sale.id.slice(-6)}.pdf`);
   toast('📄 PDF descargado');

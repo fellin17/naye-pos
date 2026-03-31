@@ -579,6 +579,38 @@ return QRCode;
         <button class="btn btn-primary" onclick="saveSettings()">💾 Guardar configuración</button>
       </div>
 
+      <!-- ── TAMAÑO DE FUENTE E INTERLINEADO DEL TICKET ── -->
+      <div class="settings-section">
+        <h3>📄 Cuerpo del ticket — Fuente e interlineado</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
+          Ajusta qué tan grandes se ven los productos y cuánto espacio hay entre cada línea.
+        </p>
+
+        <div class="input-group">
+          <label>Tamaño de fuente — productos
+            <span id="valBodySize" style="color:var(--accent);font-weight:800;margin-left:6px">10pt</span>
+          </label>
+          <input type="range" id="cfgTicketBodySize" min="7" max="14" step="0.5" value="10"
+            oninput="document.getElementById('valBodySize').textContent=this.value+'pt'"
+            style="width:100%;accent-color:var(--accent)">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
+            <span>Muy compacto (7pt)</span><span>Grande (14pt)</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Interlineado entre productos
+            <span id="valLineH" style="color:var(--accent);font-weight:800;margin-left:6px">Normal</span>
+          </label>
+          <input type="range" id="cfgTicketLineH" min="4" max="9" step="0.5" value="5.5"
+            oninput="(() => { const v=parseFloat(this.value); document.getElementById('valLineH').textContent = v<=4.5?'Muy compacto':v<=5.5?'Normal':v<=7?'Espaciado':'Muy espaciado'; })()"
+            style="width:100%;accent-color:var(--accent)">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
+            <span>⬅ Más compacto</span><span>Más espaciado ➡</span>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-section">
         <h3>🖨️ Impresora de Tickets (PDF carta)</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:10px">
@@ -863,6 +895,8 @@ let cfg = {
   headerNameItalic:false,// cursiva nombre empresa
   headerDataSize:10,     // tamaño datos (tel, dir, rfc)
   headerAlign:'center',  // alineación: center, left, right
+  ticketBodySize: 10,    // tamaño fuente productos en ticket
+  ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
 
@@ -1321,102 +1355,111 @@ function renderQRCodes() {
 function generateTicketPDF(sale) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
-  const W = 216, PL = 20, PR = 20;
-  let y = 20;
-  const ln = (h=5) => { y += h; };
+  const W = 216, PL = 18, PR = 18;
+  let y = 14;
+  const ln = (h) => { y += h; };
 
-  // ── Encabezado configurable ──
-  const hAlign    = cfg.headerAlign    || 'center';
-  const nameSize  = cfg.headerNameSize || 22;
-  const dataSize  = cfg.headerDataSize || 10;
-  const nameBold  = cfg.headerNameBold  !== false;
-  const nameItal  = cfg.headerNameItalic === true;
-  const pdfAlign  = hAlign === 'left' ? PL : hAlign === 'right' ? W-PR : W/2;
-  const jAlign    = hAlign === 'left' ? 'left' : hAlign === 'right' ? 'right' : 'center';
+  // ── Config de tamaños ──
+  const nameSize   = cfg.headerNameSize  || 20;
+  const dataSize   = cfg.headerDataSize  || 9;
+  const bodySize   = cfg.ticketBodySize  || 10;
+  const lineH      = cfg.ticketLineH     || 5.5;
+  const nameBold   = cfg.headerNameBold  !== false;
+  const nameItal   = cfg.headerNameItalic === true;
+  const jsPdfFont  = nameBold && nameItal ? 'bolditalic' : nameBold ? 'bold' : nameItal ? 'italic' : 'normal';
 
-  // Logo imagen
+  // ── ENCABEZADO: Logo IZQUIERDA + Datos DERECHA ──
+  const logoSize = 26;
+  const logoX = PL;
+  const dataX = PL + logoSize + 5; // texto empieza tras el logo
+  const dataMaxW = W - PR - dataX;
+  const yStart = y;
+
   if (cfg.headerLogo) {
     try {
-      const logoSize = 28;
-      const logoX = hAlign === 'center' ? W/2 - logoSize/2 : hAlign === 'right' ? W-PR-logoSize : PL;
       doc.addImage(cfg.headerLogo, 'JPEG', logoX, y, logoSize, logoSize);
-      ln(logoSize + 4);
     } catch {}
   }
 
-  // Nombre del negocio
-  const nameFont = (nameBold ? 'bold' : 'normal') + (nameItal ? 'italic' : '');
-  const jsPdfFont = nameBold && nameItal ? 'bolditalic' : nameBold ? 'bold' : nameItal ? 'italic' : 'normal';
+  // Nombre del negocio — alineado a la derecha del logo
   doc.setFontSize(nameSize); doc.setFont('helvetica', jsPdfFont);
-  doc.text(cfg.bizName || 'MI NEGOCIO', pdfAlign, y, {align: jAlign}); ln(nameSize * 0.45);
+  doc.text(cfg.bizName || 'MI NEGOCIO', dataX, y + 7);
+  let yData = y + 7 + nameSize * 0.38;
 
-  // Datos de la empresa
-  doc.setFontSize(dataSize); doc.setFont('helvetica','normal');
-  if (cfg.address) { doc.text(cfg.address, pdfAlign, y, {align: jAlign}); ln(dataSize * 0.6); }
-  if (cfg.phone)   { doc.text('Tel: ' + cfg.phone, pdfAlign, y, {align: jAlign}); ln(dataSize * 0.6); }
-  if (cfg.rfc)     { doc.text('RFC: ' + cfg.rfc, pdfAlign, y, {align: jAlign}); ln(dataSize * 0.6); }
-  ln(3);
-  doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+  doc.setFontSize(dataSize); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  if (cfg.address) { doc.text(cfg.address, dataX, yData); yData += dataSize * 0.55; }
+  if (cfg.phone)   { doc.text('Tel: ' + cfg.phone, dataX, yData); yData += dataSize * 0.55; }
+  if (cfg.rfc)     { doc.text('RFC: ' + cfg.rfc, dataX, yData); yData += dataSize * 0.55; }
+  doc.setTextColor(0,0,0);
 
-  // Datos de la venta
+  y = Math.max(yStart + logoSize + 3, yData + 2);
+  doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(4);
+
+  // ── Datos de la venta ──
   const d = new Date(sale.date);
-  doc.setFontSize(10);
-  doc.text(`Fecha: ${d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`, PL, y); ln(5);
-  doc.text(`Hora:  ${d.toLocaleTimeString('es-MX')}`, PL, y); ln(5);
-  doc.text(`Folio: #${sale.id.slice(-8).toUpperCase()}`, PL, y); ln(5);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  doc.text(`Cliente: ${sale.customer}`, PL, y); ln(7);
-  doc.setFont('helvetica','normal');
-  doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(6);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  const fechaStr = d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  doc.text(`Fecha: ${fechaStr}`, PL, y);
+  doc.text(`Hora: ${d.toLocaleTimeString('es-MX')}`, W-PR, y, {align:'right'});
+  ln(4.5);
+  doc.text(`Folio: #${sale.id.slice(-8).toUpperCase()}`, PL, y);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text(`Cliente: ${sale.customer}`, W-PR, y, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  ln(4);
+  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(4);
 
-  // Encabezado tabla
-  doc.setFontSize(10); doc.setFont('helvetica','bold');
+  // ── Encabezado tabla ──
+  doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
   doc.text('PRODUCTO', PL, y);
-  doc.text('CANT',   PL+95, y, {align:'center'});
-  doc.text('P.UNIT.', PL+125, y, {align:'center'});
+  doc.text('CANT',    PL+98, y, {align:'center'});
+  doc.text('P.UNIT.', PL+128, y, {align:'center'});
   doc.text('SUBTOTAL', W-PR, y, {align:'right'});
-  ln(4); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(5);
+  ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
-  // Filas de productos
-  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  // ── Filas de productos ──
+  doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
-    const name = item.name.length > 40 ? item.name.slice(0,40)+'…' : item.name;
-    doc.text(name,                          PL,      y);
-    doc.text(String(item.qty),              PL+95,   y, {align:'center'});
-    doc.text(fmt(item.sellPrice),           PL+125,  y, {align:'center'});
-    doc.text(fmt(item.sellPrice * item.qty),W-PR,    y, {align:'right'});
-    ln(7);
+    const maxChars = Math.floor(85 / (bodySize * 0.42));
+    const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
+    doc.text(name,                           PL,      y);
+    doc.text(String(item.qty),               PL+98,   y, {align:'center'});
+    doc.text(fmt(item.sellPrice),            PL+128,  y, {align:'center'});
+    doc.setFont('helvetica','bold');
+    doc.text(fmt(item.sellPrice * item.qty), W-PR,    y, {align:'right'});
+    doc.setFont('helvetica','normal');
+    ln(lineH);
   });
 
-  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(7);
+  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
 
-  // Totales
-  doc.setFontSize(11); doc.setFont('helvetica','normal');
-  doc.text('Subtotal:', W-PR-65, y);
-  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(9);
-  doc.setLineWidth(0.6); doc.line(W-PR-90, y, W-PR, y); ln(7);
-  doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text('TOTAL A PAGAR:', W-PR-90, y);
-  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(14);
+  // ── Totales ──
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('Subtotal:', W-PR-60, y);
+  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(4);
+  doc.text(`No. artículos: ${sale.items.reduce((a,i)=>a+i.qty,0)}`, PL, y);
+  doc.setLineWidth(0.7); doc.line(W-PR-85, y, W-PR, y); ln(5);
+  doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text('TOTAL A PAGAR:', W-PR-85, y);
+  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(10);
 
-  // Mensaje despedida
-  doc.setFont('helvetica','italic'); doc.setFontSize(11);
-  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(10);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(150,150,150);
-  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'});
+  // ── Pie de página ──
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(60,60,60);
+  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'}); ln(5);
 
-  // QR Code — siempre se genera
+  // QR
   const qrDataUrl = makeQRDataURL(getSaleQRText(sale));
-  ln(6);
   if (qrDataUrl) {
-    const qrSize = 35;
+    const qrSize = 28;
     doc.addImage(qrDataUrl, 'PNG', W/2 - qrSize/2, y, qrSize, qrSize);
-    ln(qrSize + 4);
+    ln(qrSize + 3);
   }
-  doc.setFontSize(7.5); doc.setTextColor(130,130,130);
-  doc.text('Escanea el QR para consultar esta nota', W/2, y, {align:'center'});
-  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-  ln(5);
+  doc.setFontSize(7); doc.setTextColor(130,130,130);
+  doc.text('Escanea el QR para consultar esta nota', W/2, y, {align:'center'}); ln(4);
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
   doc.save(`ticket_${safe(sale.customer)}_${sale.id.slice(-6)}.pdf`);
@@ -2211,6 +2254,11 @@ function loadSettings() {
     document.getElementById('btnQuitarLogo').style.display = '';
   }
   setAlign(cfg.headerAlign || 'center', false);
+  // Ticket body size & line height
+  const tbs = document.getElementById('cfgTicketBodySize');
+  const tlh = document.getElementById('cfgTicketLineH');
+  if (tbs) { tbs.value = cfg.ticketBodySize || 10; document.getElementById('valBodySize').textContent = (cfg.ticketBodySize||10)+'pt'; }
+  if (tlh) { tlh.value = cfg.ticketLineH || 5.5; const v=cfg.ticketLineH||5.5; document.getElementById('valLineH').textContent = v<=4.5?'Muy compacto':v<=5.5?'Normal':v<=7?'Espaciado':'Muy espaciado'; }
   updateLabelPreview();
   previewHeader();
 }
@@ -2233,6 +2281,8 @@ function saveSettings() {
   cfg.headerNameBold   = document.getElementById('cfgNameBold').checked;
   cfg.headerNameItalic = document.getElementById('cfgNameItalic').checked;
   // Logo se guarda en handleLogoUpload directamente
+  cfg.ticketBodySize = parseFloat(document.getElementById('cfgTicketBodySize')?.value) || 10;
+  cfg.ticketLineH    = parseFloat(document.getElementById('cfgTicketLineH')?.value)    || 5.5;
   saveAll();
   updateHeader();
   toast('¡Configuración guardada!');
