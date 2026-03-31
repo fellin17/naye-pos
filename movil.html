@@ -442,7 +442,7 @@ const fbCfg = {
 let fbDoc = null, fbReady = false;
 try {
   firebase.initializeApp(fbCfg);
-  fbDoc = firebase.firestore().collection('pos').doc('data');
+  fbDoc = firebase.firestore().collection('naye_pos').doc('data');
   fbReady = true;
 } catch(e) { console.warn('Firebase:', e.message); }
 
@@ -454,7 +454,7 @@ let cart = [];
 async function loadData() {
   // Local primero
   try {
-    const local = JSON.parse(localStorage.getItem('pos_backup') || 'null');
+    const local = JSON.parse(localStorage.getItem('naye_pos_backup') || 'null');
     if (local) applyData(local);
   } catch {}
 
@@ -467,7 +467,7 @@ async function loadData() {
       ]);
       if (snap.exists) {
         applyData(snap.data());
-        localStorage.setItem('pos_backup', JSON.stringify(snap.data()));
+        localStorage.setItem('naye_pos_backup', JSON.stringify(snap.data()));
         setSyncStatus('🟢 Sincronizado');
       }
     } catch(e) {
@@ -478,7 +478,7 @@ async function loadData() {
     fbDoc.onSnapshot(snap => {
       if (snap.exists) {
         applyData(snap.data());
-        localStorage.setItem('pos_backup', JSON.stringify(snap.data()));
+        localStorage.setItem('naye_pos_backup', JSON.stringify(snap.data()));
         setSyncStatus('🟢 En línea');
         renderInventario();
         renderNotas();
@@ -502,7 +502,7 @@ function applyData(data) {
 
 async function saveData() {
   const data = { products, sales, cuts, cfg };
-  try { localStorage.setItem('pos_backup', JSON.stringify(data)); } catch {}
+  try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
   if (fbReady) fbDoc.set(data).catch(() => {});
 }
 

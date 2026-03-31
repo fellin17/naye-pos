@@ -813,7 +813,7 @@ const _fbCfg = {
 let _fbReady = false, _fbDoc = null;
 try {
   firebase.initializeApp(_fbCfg);
-  _fbDoc = firebase.firestore().collection('pos').doc('data');
+  _fbDoc = firebase.firestore().collection('naye_pos').doc('data');
   _fbReady = true;
 } catch(e) { console.warn('Firebase init:', e.message); }
 
@@ -822,7 +822,7 @@ const DB = {
   // Carga: localStorage primero (instantáneo), luego Firebase
   async load() {
     let local = null;
-    try { local = JSON.parse(localStorage.getItem('pos_backup')); } catch {}
+    try { local = JSON.parse(localStorage.getItem('naye_pos_backup')); } catch {}
     if (!_fbReady) return local;
     try {
       const snap = await Promise.race([
@@ -831,7 +831,7 @@ const DB = {
       ]);
       if (snap.exists) {
         const d = snap.data();
-        try { localStorage.setItem('pos_backup', JSON.stringify(d)); } catch {}
+        try { localStorage.setItem('naye_pos_backup', JSON.stringify(d)); } catch {}
         return d;
       }
     } catch(e) { console.warn('Firebase load:', e.message); }
@@ -839,7 +839,7 @@ const DB = {
   },
   // Guarda: localStorage + Firebase en paralelo
   save(data) {
-    try { localStorage.setItem('pos_backup', JSON.stringify(data)); } catch {}
+    try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
     if (_fbReady) _fbDoc.set(data).catch(e => console.warn('Firebase save:', e.message));
   },
   // Escucha cambios en tiempo real
@@ -872,7 +872,7 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 async function init() {
   // 1. Arrancar con localStorage inmediatamente
   try {
-    const local = JSON.parse(localStorage.getItem('pos_backup') || 'null');
+    const local = JSON.parse(localStorage.getItem('naye_pos_backup') || 'null');
     if (local) {
       products = local.products || [];
       sales    = local.sales    || [];
@@ -908,7 +908,7 @@ async function init() {
     cfg      = { ...cfg, ...(data.cfg || {}) };
     updateHeader(); renderInventory(); renderCut(); renderHistory();
     updateConnectionStatus('online');
-    try { localStorage.setItem('pos_backup', JSON.stringify(data)); } catch {}
+    try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
   });
 }
 
@@ -2240,7 +2240,7 @@ function saveSettings() {
 
 function resetAll() {
   if (!confirm('¿Seguro? Se borrarán TODOS los datos (productos, ventas, cortes).')) return;
-  localStorage.removeItem('pos_backup');
+  localStorage.removeItem('naye_pos_backup');
   fetch('/api/data', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
