@@ -899,26 +899,17 @@ let cfg = {
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
-let _waWin = null; // Referencia a la pestaña de WhatsApp Web
+let whatsappWindow = null;
 
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  // Extraer el texto del mensaje
-  const msg = decodeURIComponent(url.split('text=')[1] || '');
-
-  // Copiar al portapapeles siempre
-  navigator.clipboard.writeText(msg).catch(() => {});
-
-  if (!_waWin || _waWin.closed) {
-    // Primera vez — abrir WhatsApp Web
-    _waWin = window.open('https://web.whatsapp.com', 'naye_wa');
-    toast('📋 Nota copiada — selecciona el contacto y pega con Ctrl+V', 'info');
+  if (!whatsappWindow || whatsappWindow.closed) {
+    whatsappWindow = window.open(url, 'brandy_whatsapp');
   } else {
-    // Ya está abierta — NO abrir otra. Solo enfocar y avisar
-    try { _waWin.focus(); } catch(e) {}
-    toast('📋 Nota copiada — ve a la pestaña de WhatsApp y pega con Ctrl+V', 'info');
+    whatsappWindow.location.href = url;
+    whatsappWindow.focus();
   }
 }
 
