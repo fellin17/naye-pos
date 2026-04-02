@@ -341,7 +341,7 @@ return QRCode;
                   🏷️ Imprimir Etiqueta &nbsp;<kbd>F3</kbd>
                 </button>
                 <button class="btn btn-ghost btn-block" id="btnWA" onclick="shareLastWhatsApp()" style="font-size:13px;background:#25D366;color:white;border:none">
-                  📋 Copiar + WhatsApp &nbsp;<kbd>F1</kbd>
+                  📲 Enviar WhatsApp &nbsp;<kbd>F1</kbd>
                 </button>
                 <!-- Enviar a número nuevo -->
                 <div style="border:1.5px solid #25D366;border-radius:8px;padding:10px;background:#f0fdf4">
@@ -905,21 +905,21 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  // Extraer solo el texto del mensaje de la URL
+  // Extraer el texto del mensaje
   const msg = decodeURIComponent(url.split('text=')[1] || '');
 
-  // 1. Copiar mensaje al portapapeles
+  // Copiar al portapapeles siempre
   navigator.clipboard.writeText(msg).catch(() => {});
 
-  // 2. Abrir/reutilizar WhatsApp Web (sin parámetros — evita el problema de window.name)
   if (!_waWin || _waWin.closed) {
+    // Primera vez — abrir WhatsApp Web
     _waWin = window.open('https://web.whatsapp.com', 'naye_wa');
+    toast('📋 Nota copiada — selecciona el contacto y pega con Ctrl+V', 'info');
   } else {
-    _waWin.focus();
+    // Ya está abierta — NO abrir otra. Solo enfocar y avisar
+    try { _waWin.focus(); } catch(e) {}
+    toast('📋 Nota copiada — ve a la pestaña de WhatsApp y pega con Ctrl+V', 'info');
   }
-
-  // 3. Mostrar instrucción al usuario
-  toast('📋 Nota copiada — ve a WhatsApp y pega con Ctrl+V', 'info');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
