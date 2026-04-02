@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirigiendo...</title>
+<style>
+  body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0fdf4; flex-direction: column; gap: 12px; }
+  .icon { font-size: 48px; }
+  p { color: #16a34a; font-weight: 700; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="icon">📲</div>
+<p>Abriendo WhatsApp...</p>
+<script>
+  // Leer la URL de WhatsApp del parámetro ?u=
+  const params = new URLSearchParams(location.search);
+  const dest = params.get('u');
+  if (dest) {
+    // Redirigir inmediatamente a WhatsApp Web
+    location.replace(dest);
+  } else {
+    document.querySelector('p').textContent = 'Error: URL no encontrada';
+  }
+</script>
+</body>
+</html>
