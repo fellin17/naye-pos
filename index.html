@@ -899,23 +899,26 @@ let cfg = {
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
-let _waTab = null; // Referencia a la pestaña de WhatsApp Web
+let _waRelay = null;  // Referencia a wa.html (intermediario)
+let _waCh = null;     // Canal de comunicación con wa.html
 
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  // Usamos una página relay en el mismo dominio (wa.html) para evitar
-  // restricciones de Chrome al navegar pestañas cross-origin
-  const base = location.href.replace(/[^/]*$/, '');
-  const relay = base + 'wa.html?u=' + encodeURIComponent(url);
-  if (_waTab && !_waTab.closed) {
-    _waTab.location.href = relay;
-    _waTab.focus();
-    return;
+  // Iniciar canal de comunicación si no existe
+  if (!_waCh) _waCh = new BroadcastChannel('naye_wa_ch');
+
+  if (_waRelay && !_waRelay.closed) {
+    // wa.html sigue abierta — mandar URL por canal interno
+    _waCh.postMessage({ url });
+    _waRelay.focus();
+  } else {
+    // Primera vez o fue cerrada — abrir wa.html
+    const base = location.href.replace(/[^/]*$/, '');
+    _waRelay = window.open(base + 'wa.html?u=' + encodeURIComponent(url), 'naye_relay');
+    if (_waRelay) _waRelay.focus();
   }
-  _waTab = window.open(relay, 'whatsapp_naye');
-  if (_waTab) _waTab.focus();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
