@@ -899,8 +899,21 @@ let cfg = {
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
+let _waTab = null; // Referencia a la pestaña de WhatsApp Web
 
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
+
+// ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
+function abrirWA(url) {
+  if (_waTab && !_waTab.closed) {
+    // Pestaña ya abierta — navegar dentro de ella y traerla al frente
+    _waTab.location.href = url;
+    _waTab.focus();
+  } else {
+    // Primera vez o la cerraron — abrir nueva
+    _waTab = window.open(url, '_blank');
+  }
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
@@ -1532,7 +1545,7 @@ function waNumeroNuevoEnviar() {
   const msg = `🏪 *${cfg.bizName || 'MI NEGOCIO'}*\n📅 ${new Date(sale.date).toLocaleDateString('es-MX')}\n👤 *${sale.customer}*\n\n${lineas}\n\n━━━━━━━━━━━━━\n💰 *TOTAL: $${sale.total.toFixed(2)}*\n━━━━━━━━━━━━━\n${cfg.msg || '¡Gracias por su compra!'}`;
 
   // Abrir directo la app de WhatsApp
-  window.open(`https://web.whatsapp.com/send?phone=52${num}&text=${encodeURIComponent(msg)}`, 'whatsapp_web');
+  abrirWA(`https://web.whatsapp.com/send?phone=52${num}&text=${encodeURIComponent(msg)}`);
   document.getElementById('waNumeroNuevo').value = '';
   // Limpiar pantalla para nueva venta
   setTimeout(() => clearCartUI(), 800);
@@ -1573,7 +1586,7 @@ ${cfg.msg || '¡Gracias por su compra!'}`;
 
   toast('✅ Nota guardada en historial');
   clearCartUI();
-  window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg), 'whatsapp_web');
+  abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
 }
 
 function shareWhatsApp(sale) {
@@ -1595,7 +1608,7 @@ ${lineas}
 ${cfg.msg || '¡Gracias por su compra!'}`;
 
   // Abre directo la app de WhatsApp en Windows (sin pasar por Chrome)
-  window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg), 'whatsapp_web');
+  abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
 }
 
 // ─── GENERAR PDF CORTE (descarga) ─────────────────────────────────────────────
@@ -2154,7 +2167,7 @@ function reporteWhatsApp() {
   }
 
   msg += `\n━━━━━━━━━━━━━━━━━━━━\n_Generado desde ${cfg.bizName || 'POS'}_`;
-  window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg), 'whatsapp_web');
+  abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
 }
 
 function openProductModal(id) {
