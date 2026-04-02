@@ -905,12 +905,16 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
+  // Usamos una página relay en el mismo dominio (wa.html) para evitar
+  // restricciones de Chrome al navegar pestañas cross-origin
+  const base = location.href.replace(/[^/]*$/, '');
+  const relay = base + 'wa.html?u=' + encodeURIComponent(url);
   if (_waTab && !_waTab.closed) {
-    _waTab.location.href = url;
+    _waTab.location.href = relay;
     _waTab.focus();
     return;
   }
-  _waTab = window.open(url, 'whatsapp_naye');
+  _waTab = window.open(relay, 'whatsapp_naye');
   if (_waTab) _waTab.focus();
 }
 
