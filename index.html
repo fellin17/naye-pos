@@ -905,7 +905,15 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  // 'whatsapp_naye' es el nombre fijo — Chrome reutiliza esa pestaña siempre
+  // Si ya tenemos referencia y la pestaña sigue abierta
+  if (_waTab && !_waTab.closed) {
+    try {
+      _waTab.location.href = url;
+      _waTab.focus();
+      return; // ← importante: no abrir nueva
+    } catch(e) {}
+  }
+  // Primera vez o la cerraron: abrir con nombre fijo (NO _blank)
   _waTab = window.open(url, 'whatsapp_naye');
   if (_waTab) _waTab.focus();
 }
