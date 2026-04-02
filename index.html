@@ -905,14 +905,9 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  if (_waTab && !_waTab.closed) {
-    // Pestaña ya abierta — navegar dentro de ella y traerla al frente
-    _waTab.location.href = url;
-    _waTab.focus();
-  } else {
-    // Primera vez o la cerraron — abrir nueva
-    _waTab = window.open(url, '_blank');
-  }
+  // 'whatsapp_naye' es el nombre fijo — Chrome reutiliza esa pestaña siempre
+  _waTab = window.open(url, 'whatsapp_naye');
+  if (_waTab) _waTab.focus();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
