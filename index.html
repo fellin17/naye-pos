@@ -899,25 +899,16 @@ let cfg = {
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
-let _waRelay = null; // Pestaña de WhatsApp/wa.html
+let _waWin = null; // Referencia a la pestaña de WhatsApp Web
 
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
 function abrirWA(url) {
-  const base = location.href.replace(/[^/]*$/, '');
-  const relay = base + 'wa.html?u=' + encodeURIComponent(url);
-
-  if (_waRelay && !_waRelay.closed) {
-    // El tab ya existe (está en WhatsApp Web)
-    // Navegar de regreso a wa.html que redirige al nuevo mensaje
-    _waRelay.location.href = relay;
-    _waRelay.focus();
-  } else {
-    // Primera vez — abrir wa.html que se redirige solo a WhatsApp
-    _waRelay = window.open(relay, 'naye_wa');
-    if (_waRelay) _waRelay.focus();
-  }
+  // Abrir directo en WhatsApp Web con nombre fijo
+  // Chrome reutiliza la pestaña por nombre aunque la referencia JS se rompa
+  _waWin = window.open(url, 'naye_whatsapp_pos');
+  if (_waWin) _waWin.focus();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
