@@ -899,18 +899,14 @@ let cfg = {
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
-let whatsappWindow = null;
-
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
+// Usa wa.html como puente para forzar la reutilización de la misma pestaña.
 function abrirWA(url) {
-  if (!whatsappWindow || whatsappWindow.closed) {
-    whatsappWindow = window.open(url, 'brandy_whatsapp');
-  } else {
-    whatsappWindow.location.href = url;
-    whatsappWindow.focus();
-  }
+  const bridgeUrl = 'wa.html?u=' + encodeURIComponent(url);
+  const waTab = window.open(bridgeUrl, 'brandy_whatsapp');
+  if (waTab) waTab.focus();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
