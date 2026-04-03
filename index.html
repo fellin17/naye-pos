@@ -43,7 +43,7 @@ return QRCode;
 </script>
 
 <style>
-  /* ââ RESET & BASE ââ */
+  /* ── RESET & BASE ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #fff0f8; --surface: #ffffff; --surface2: #fce7f3;
@@ -57,7 +57,7 @@ return QRCode;
     --radius: 10px;
   }
 
-  /* ââ ANIMACIONES ââ */
+  /* ── ANIMACIONES ── */
   @keyframes pulse-pink {
     0%, 100% { box-shadow: 0 0 0 0 rgba(190,24,93,0.4); }
     50% { box-shadow: 0 0 0 8px rgba(190,24,93,0); }
@@ -79,10 +79,10 @@ return QRCode;
   button { cursor: pointer; font-family: inherit; }
   input, select, textarea { font-family: inherit; }
 
-  /* ââ LAYOUT ââ */
+  /* ── LAYOUT ── */
   #app { display: flex; flex-direction: column; min-height: 100vh; }
 
-  /* ââ HEADER ââ */
+  /* ── HEADER ── */
   #header {
     background: linear-gradient(135deg, #be185d 0%, #9d174d 50%, #1a0010 100%); color: white; padding: 0 16px;
     display: flex; align-items: center; gap: 12px; height: 56px;
@@ -92,7 +92,7 @@ return QRCode;
   #header .biz-name { font-size: 16px; font-weight: 700; flex: 1; }
   #header .fecha { font-size: 11px; opacity: 0.8; }
 
-  /* ââ NAV ââ */
+  /* ── NAV ── */
   #nav {
     background: white; border-bottom: 2px solid var(--border);
     display: flex; overflow-x: auto; position: sticky; top: 56px; z-index: 99;
@@ -105,20 +105,20 @@ return QRCode;
   #nav button.active { color: var(--accent); border-bottom-color: var(--accent); background: linear-gradient(to bottom, #fdf2f8, #fff); }
   #nav button:hover:not(.active) { background: var(--surface2); }
 
-  /* ââ MAIN ââ */
+  /* ── MAIN ── */
   #main { padding: 16px; max-width: 900px; margin: 0 auto; width: 100%; }
 
-  /* ââ CARDS ââ */
+  /* ── CARDS ── */
   .card { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow .2s; } .card:hover { box-shadow: 0 4px 16px rgba(190,24,93,0.12); }
   .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
 
-  /* ââ INPUTS ââ */
+  /* ── INPUTS ── */
   .input { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: border-color .15s; }
   .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(190,24,93,.15); }
   .input-group { margin-bottom: 10px; }
   .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
 
-  /* ââ BUTTONS ââ */
+  /* ── BUTTONS ── */
   .btn {
     padding: 9px 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 13px;
     transition: all .25s cubic-bezier(.34,1.56,.64,1);
@@ -157,27 +157,27 @@ return QRCode;
   .btn-sm { padding: 5px 10px; font-size: 12px; }
   .btn-block { width: 100%; }
 
-  /* ââ TAGS ââ */
+  /* ── TAGS ── */
   .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
   .tag-green { background: var(--green-light); color: var(--green); }
   .tag-red { background: var(--red-light); color: var(--red); }
   .tag-orange { background: var(--orange-light); color: var(--orange); }
   .tag-blue { background: var(--accent-light); color: var(--accent); }
 
-  /* ââ TABLE ââ */
+  /* ── TABLE ── */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; background: var(--surface2); border-bottom: 1px solid var(--border); }
   td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--surface2); }
 
-  /* ââ STATS ââ */
+  /* ── STATS ── */
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
   .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
   .stat-value { font-size: 22px; font-weight: 800; color: var(--accent); }
   .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
 
-  /* ââ MODAL ââ */
+  /* ── MODAL ── */
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
   .modal-bg.open { display: flex; }
   .modal { background: white; border-radius: 12px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
@@ -187,45 +187,45 @@ return QRCode;
   .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
   .close-btn { background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; line-height: 1; }
 
-  /* ââ SEARCH DROPDOWN ââ */
+  /* ── SEARCH DROPDOWN ── */
   .search-wrap { position: relative; }
   .search-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; z-index: 50; max-height: 260px; overflow-y: auto; box-shadow: var(--shadow-lg); }
   .search-item { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); transition: background .1s; }
   .search-item:hover { background: var(--accent-light); border-left: 3px solid var(--accent); }
   .search-item:last-child { border-bottom: none; }
 
-  /* ââ CART ââ */
+  /* ── CART ── */
   .cart-total-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
   .cart-total-row.grand { font-size: 18px; font-weight: 800; border-top: 2px solid var(--border); margin-top: 8px; padding-top: 10px; }
 
-  /* ââ QTY CONTROL ââ */
+  /* ── QTY CONTROL ── */
   .qty-ctrl { display: flex; align-items: center; gap: 6px; }
   .qty-ctrl button { width: 26px; height: 26px; border: 1px solid var(--border); background: var(--surface2); border-radius: 4px; font-size: 15px; display: flex; align-items: center; justify-content: center; }
   .qty-ctrl input { width: 40px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 3px; font-size: 13px; }
 
-  /* ââ TOAST ââ */
+  /* ── TOAST ── */
   #toast { position: fixed; bottom: 20px; right: 20px; z-index: 999; max-width: 300px; padding: 12px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; box-shadow: var(--shadow-lg); display: none; }
   #toast.show { display: block; }
   #toast.success { background: var(--green); color: white; }
   #toast.error { background: var(--red); color: white; }
   #toast.info { background: linear-gradient(135deg, #be185d, #9d174d); color: white; }
 
-  /* ââ EMPTY STATE ââ */
+  /* ── EMPTY STATE ── */
   .empty { text-align: center; padding: 40px; color: var(--muted); }
   .empty .icon { font-size: 40px; margin-bottom: 8px; }
 
-  /* ââ FORM GRID ââ */
+  /* ── FORM GRID ── */
   .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  /* ââ LOW STOCK ââ */
+  /* ── LOW STOCK ── */
   .low-stock { color: var(--orange); font-weight: 700; }
   .no-stock { color: var(--red); font-weight: 700; }
 
-  /* ââ SETTINGS ââ */
+  /* ── SETTINGS ── */
   .settings-section { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
   .settings-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); display: flex; align-items: center; gap: 6px; }
 
-  /* ââ KBD ââ */
+  /* ── KBD ── */
   kbd {
     display:inline-block; padding:1px 6px; border:1px solid rgba(255,255,255,0.5);
     border-radius:4px; font-size:10px; font-family:'Courier New',monospace;
@@ -238,7 +238,7 @@ return QRCode;
     .form-grid-2 { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
-  /* ââ MOBILE FIX ââ */
+  /* ── MOBILE FIX ── */
   @media (max-width: 768px) {
     #main { padding: 10px; }
     #nav button {
@@ -266,7 +266,7 @@ return QRCode;
 
   <!-- HEADER -->
   <div id="header">
-    <span class="logo" id="hdrLogo">ðª</span>
+    <span class="logo" id="hdrLogo">🏪</span>
     <div>
       <div class="biz-name" id="hdrName">MI NEGOCIO</div>
       <div class="fecha" id="hdrFecha"></div>
@@ -276,35 +276,35 @@ return QRCode;
 
   <!-- NAV -->
   <div id="nav">
-    <button class="active" onclick="showView('pos')">ð VENTA <small style="opacity:.6;font-size:9px">(F4)</small></button>
-    <button onclick="showView('inventory')">ð¦ ALMACÃN</button>
-    <button onclick="showView('history')">ð HISTORIAL <small style="opacity:.6;font-size:9px">(F5)</small></button>
-    <button onclick="showView('cut')">âï¸ CORTE</button>
-    <button onclick="showView('settings')">âï¸ CONFIG</button>
+    <button class="active" onclick="showView('pos')">🛒 VENTA <small style="opacity:.6;font-size:9px">(F4)</small></button>
+    <button onclick="showView('inventory')">📦 ALMACÉN</button>
+    <button onclick="showView('history')">📋 HISTORIAL <small style="opacity:.6;font-size:9px">(F5)</small></button>
+    <button onclick="showView('cut')">✂️ CORTE</button>
+    <button onclick="showView('settings')">⚙️ CONFIG</button>
   </div>
 
   <!-- MAIN -->
   <div id="main">
 
-    <!-- âââââââââââ VISTA: VENTA âââââââââââ -->
+    <!-- ═══════════ VISTA: VENTA ═══════════ -->
     <div id="view-pos">
       <div id="pos-layout" style="display:flex;flex-direction:column;gap:16px;">
 
         <!-- Lado izquierdo: buscar productos -->
         <div>
           <div class="input-group" style="margin-bottom:12px">
-            <label>ð¤ Nombre de la clienta</label>
-            <input class="input" id="posCustomer" placeholder="Ej: MarÃ­a GarcÃ­a"
+            <label>👤 Nombre de la clienta</label>
+            <input class="input" id="posCustomer" placeholder="Ej: María García"
               oninput="updateCartUI()"
               onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('posSearch').focus();}">
           </div>
 
           <div class="input-group">
-            <label>ð Buscar producto (nombre o cÃ³digo de barras)</label>
+            <label>🔍 Buscar producto (nombre o código de barras)</label>
             <div class="search-wrap">
               <div style="display:flex;gap:8px;align-items:center">
-                <input class="input" id="posSearch" placeholder="Escribe o escanea cÃ³digo de barras..." oninput="searchProducts()" onkeydown="searchKeydown(event)" autocomplete="off" style="flex:1">
-                <button onclick="openScanner()" title="Escanear con cÃ¡mara" style="background:var(--accent);color:white;border:none;border-radius:6px;padding:9px 12px;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:40px;width:44px;">ð·</button>
+                <input class="input" id="posSearch" placeholder="Escribe o escanea código de barras..." oninput="searchProducts()" onkeydown="searchKeydown(event)" autocomplete="off" style="flex:1">
+                <button onclick="openScanner()" title="Escanear con cámara" style="background:var(--accent);color:white;border:none;border-radius:6px;padding:9px 12px;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:40px;width:44px;">📷</button>
               </div>
               <div class="search-results" id="searchResults" style="display:none"></div>
             </div>
@@ -313,12 +313,12 @@ return QRCode;
           <!-- Tabla del carrito -->
           <div class="card" style="margin-top:4px">
             <div class="card-header">
-              <span>ð Productos en la nota</span>
+              <span>🛒 Productos en la nota</span>
               <button class="btn btn-ghost btn-sm" onclick="clearCart()">Limpiar</button>
             </div>
             <div id="cartTableWrap">
               <div class="empty">
-                <div class="icon">ð</div>
+                <div class="icon">🛒</div>
                 <div>Busca y agrega productos</div>
               </div>
             </div>
@@ -328,27 +328,27 @@ return QRCode;
         <!-- Lado derecho: resumen y acciones -->
         <div>
           <div class="card">
-            <div class="card-header">ð° Resumen de la nota</div>
+            <div class="card-header">💰 Resumen de la nota</div>
             <div style="padding:16px">
               <div id="cartSummary">
                 <div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Agrega productos para ver el total</div>
               </div>
               <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
                 <button class="btn btn-success btn-block" onclick="completeSale()" style="font-size:14px;padding:12px">
-                  â Completar + PDF &nbsp;<kbd>F2</kbd>
+                  ✅ Completar + PDF &nbsp;<kbd>F2</kbd>
                 </button>
                 <button class="btn btn-primary btn-block" onclick="printLabelFromCart()" style="font-size:13px">
-                  ð·ï¸ Imprimir Etiqueta &nbsp;<kbd>F3</kbd>
+                  🏷️ Imprimir Etiqueta &nbsp;<kbd>F3</kbd>
                 </button>
-                <!-- BotÃ³n copiar nota al portapapeles -->
+                <!-- Botón copiar nota al portapapeles -->
                 <button class="btn btn-ghost btn-block" onclick="copiarNota()" style="font-size:13px;background:#25D366;color:white;border:none">
-                  ð Copiar nota &nbsp;<kbd>F1</kbd>
+                  📋 Copiar nota &nbsp;<kbd>F1</kbd>
                 </button>
-                <!-- Enviar a nÃºmero nuevo por WhatsApp Web -->
+                <!-- Enviar a número nuevo por WhatsApp Web -->
                 <div style="border:1.5px solid #25D366;border-radius:8px;padding:10px;background:#f0fdf4">
-                  <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:6px;text-transform:uppercase">ð² Enviar a nÃºmero nuevo por WhatsApp Web</div>
+                  <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:6px;text-transform:uppercase">📲 Enviar a número nuevo por WhatsApp Web</div>
                   <div style="display:flex;gap:6px">
-                    <input type="tel" id="waNumeroNuevo" placeholder="10 dÃ­gitos ej: 5512345678"
+                    <input type="tel" id="waNumeroNuevo" placeholder="10 dígitos ej: 5512345678"
                       maxlength="10" inputmode="numeric"
                       style="flex:1;padding:8px 10px;border:1px solid #86efac;border-radius:6px;font-size:13px;outline:none;font-family:inherit"
                       onkeydown="if(event.key==='Enter') waNumeroNuevoEnviar()">
@@ -363,27 +363,27 @@ return QRCode;
           </div>
 
           <div class="card" style="margin-top:12px">
-            <div class="card-header">ð¡ Acceso rÃ¡pido</div>
+            <div class="card-header">💡 Acceso rápido</div>
             <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
-              <button class="btn btn-ghost btn-sm btn-block" onclick="showView('inventory')">ð¦ Ver/Agregar productos</button>
-              <button class="btn btn-ghost btn-sm btn-block" onclick="showView('cut')">âï¸ Hacer corte de caja</button>
+              <button class="btn btn-ghost btn-sm btn-block" onclick="showView('inventory')">📦 Ver/Agregar productos</button>
+              <button class="btn btn-ghost btn-sm btn-block" onclick="showView('cut')">✂️ Hacer corte de caja</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- âââââââââââ VISTA: ALMACÃN âââââââââââ -->
+    <!-- ═══════════ VISTA: ALMACÉN ═══════════ -->
     <div id="view-inventory" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:700;font-size:16px">ð¦ AlmacÃ©n / Inventario</div>
+          <div style="font-weight:700;font-size:16px">📦 Almacén / Inventario</div>
           <div style="font-size:12px;color:var(--muted)" id="invCount"></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="toggleTop10PC()" style="background:#fef3c7;color:#92400e;border:1px solid #f59e0b">ð Top 10 vendidos</button>
-          <button class="btn btn-ghost btn-sm" onclick="reportePDF()">ð Reporte PDF</button>
-          <button class="btn btn-ghost btn-sm" style="background:#25D366;color:white;border:none" onclick="reporteWhatsApp()">ð² Reporte WA</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleTop10PC()" style="background:#fef3c7;color:#92400e;border:1px solid #f59e0b">🏆 Top 10 vendidos</button>
+          <button class="btn btn-ghost btn-sm" onclick="reportePDF()">📄 Reporte PDF</button>
+          <button class="btn btn-ghost btn-sm" style="background:#25D366;color:white;border:none" onclick="reporteWhatsApp()">📲 Reporte WA</button>
           <button class="btn btn-primary" onclick="openProductModal()">+ Agregar Producto</button>
         </div>
       </div>
@@ -392,8 +392,8 @@ return QRCode;
       <div id="top10Panel" style="display:none;margin-bottom:14px">
         <div class="card">
           <div class="card-header" style="background:linear-gradient(135deg,#be185d,#a21caf);color:white">
-            ð Top 10 â Productos mÃ¡s vendidos
-            <button onclick="toggleTop10PC()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px;float:right">â Cerrar</button>
+            🏆 Top 10 — Productos más vendidos
+            <button onclick="toggleTop10PC()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px;float:right">✕ Cerrar</button>
           </div>
           <div id="top10PCList" style="padding:8px"></div>
         </div>
@@ -403,7 +403,7 @@ return QRCode;
       <div id="lowStockAlert" style="display:none;margin-bottom:12px"></div>
 
       <div class="input-group" style="margin-bottom:12px">
-        <input class="input" id="invSearch" placeholder="ð Buscar en inventario..."
+        <input class="input" id="invSearch" placeholder="🔍 Buscar en inventario..."
           oninput="renderInventory();_invIdx=-1"
           onkeydown="invSearchKeydown(event)">
       </div>
@@ -413,11 +413,11 @@ return QRCode;
       </div>
     </div>
 
-    <!-- âââââââââââ VISTA: HISTORIAL âââââââââââ -->
+    <!-- ═══════════ VISTA: HISTORIAL ═══════════ -->
     <div id="view-history" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:700;font-size:16px">ð Historial de Ventas</div>
+          <div style="font-weight:700;font-size:16px">📋 Historial de Ventas</div>
           <span id="histCount" class="tag tag-blue"></span>
         </div>
       </div>
@@ -425,8 +425,8 @@ return QRCode;
       <!-- Filtro por cliente -->
       <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <div style="flex:1;min-width:200px;position:relative">
-          <input class="input" id="histSearch" placeholder="ð Filtrar por nombre de clienta..." oninput="renderHistory()" style="padding-right:36px">
-          <button id="histClearBtn" onclick="document.getElementById('histSearch').value='';renderHistory()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">Ã</button>
+          <input class="input" id="histSearch" placeholder="🔍 Filtrar por nombre de clienta..." oninput="renderHistory()" style="padding-right:36px">
+          <button id="histClearBtn" onclick="document.getElementById('histSearch').value='';renderHistory()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
         </div>
       </div>
 
@@ -436,34 +436,34 @@ return QRCode;
       <div id="historyList"></div>
     </div>
 
-    <!-- âââââââââââ VISTA: CORTE âââââââââââ -->
+    <!-- ═══════════ VISTA: CORTE ═══════════ -->
     <div id="view-cut" style="display:none">
-      <div style="font-weight:700;font-size:16px;margin-bottom:16px">âï¸ Corte de Caja</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:16px">✂️ Corte de Caja</div>
 
       <div class="card" style="margin-bottom:16px">
-        <div class="card-header">ð Ventas de hoy (pendientes de corte)</div>
+        <div class="card-header">📅 Ventas de hoy (pendientes de corte)</div>
         <div style="padding:16px">
           <div class="stats-grid" id="cutStatsToday"></div>
           <div id="cutSalesToday" style="margin-bottom:16px"></div>
           <button class="btn btn-orange btn-block" onclick="doCut()" style="font-size:14px;padding:12px">
-            âï¸ Hacer Corte e Imprimir
+            ✂️ Hacer Corte e Imprimir
           </button>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header">ð Cortes anteriores</div>
+        <div class="card-header">📁 Cortes anteriores</div>
         <div id="cutHistory"></div>
       </div>
     </div>
 
-    <!-- âââââââââââ VISTA: CONFIGURACIÃN âââââââââââ -->
+    <!-- ═══════════ VISTA: CONFIGURACIÓN ═══════════ -->
     <div id="view-settings" style="display:none">
-      <div style="font-weight:700;font-size:16px;margin-bottom:16px">âï¸ ConfiguraciÃ³n</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:16px">⚙️ Configuración</div>
 
-      <!-- ââ DATOS DEL NEGOCIO ââ -->
+      <!-- ── DATOS DEL NEGOCIO ── -->
       <div class="settings-section">
-        <h3>ðª Datos del negocio</h3>
+        <h3>🏪 Datos del negocio</h3>
         <div class="form-grid-2">
           <div class="input-group">
             <label>Nombre del negocio *</label>
@@ -476,30 +476,30 @@ return QRCode;
         </div>
         <div class="form-grid-2">
           <div class="input-group">
-            <label>TelÃ©fono</label>
+            <label>Teléfono</label>
             <input class="input" id="cfgPhone" placeholder="55 1234 5678">
           </div>
           <div class="input-group">
-            <label>DirecciÃ³n</label>
+            <label>Dirección</label>
             <input class="input" id="cfgAddress" placeholder="Calle, Colonia, Ciudad">
           </div>
         </div>
         <div class="input-group">
           <label>Mensaje de despedida en el ticket</label>
-          <input class="input" id="cfgMsg" placeholder="Â¡Gracias por su compra! Vuelva pronto">
+          <input class="input" id="cfgMsg" placeholder="¡Gracias por su compra! Vuelva pronto">
         </div>
       </div>
 
-      <!-- ââ DISEÃO DEL ENCABEZADO ââ -->
+      <!-- ── DISEÑO DEL ENCABEZADO ── -->
       <div class="settings-section">
-        <h3>ð¨ DiseÃ±o del encabezado del ticket</h3>
+        <h3>🎨 Diseño del encabezado del ticket</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
-          Personaliza cÃ³mo se verÃ¡ el membrete en todos tus tickets PDF.
+          Personaliza cómo se verá el membrete en todos tus tickets PDF.
         </p>
 
         <!-- Logo imagen -->
         <div class="input-group">
-          <label>Logo del negocio (JPG o PNG â aparece en el ticket)</label>
+          <label>Logo del negocio (JPG o PNG — aparece en el ticket)</label>
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
             <div id="logoPreviewBox" style="width:80px;height:80px;border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--surface2);flex-shrink:0;overflow:hidden">
               <span id="logoPreviewEmpty" style="font-size:11px;color:var(--muted);text-align:center">Sin<br>logo</span>
@@ -509,11 +509,11 @@ return QRCode;
               <input type="file" id="cfgLogoFile" accept="image/png,image/jpeg,image/jpg"
                 onchange="handleLogoUpload(this)" style="display:none">
               <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cfgLogoFile').click()"
-                style="margin-bottom:8px;width:100%">ð Seleccionar imagen</button>
+                style="margin-bottom:8px;width:100%">📁 Seleccionar imagen</button>
               <button class="btn btn-ghost btn-sm" onclick="quitarLogo()"
-                id="btnQuitarLogo" style="display:none;width:100%;color:var(--red)">ðï¸ Quitar logo</button>
+                id="btnQuitarLogo" style="display:none;width:100%;color:var(--red)">🗑️ Quitar logo</button>
               <div style="font-size:11px;color:var(--muted);margin-top:6px">
-                Recomendado: fondo blanco, 200Ã200px o mÃ¡s
+                Recomendado: fondo blanco, 200×200px o más
               </div>
             </div>
           </div>
@@ -532,22 +532,22 @@ return QRCode;
           </div>
         </div>
 
-        <!-- TamaÃ±o fuente nombre -->
+        <!-- Tamaño fuente nombre -->
         <div class="input-group">
-          <label>TamaÃ±o del nombre del negocio
+          <label>Tamaño del nombre del negocio
             <span id="valNameSize" style="color:var(--accent);font-weight:800;margin-left:6px">22pt</span>
           </label>
           <input type="range" id="cfgHeaderNameSize" min="12" max="36" step="1" value="22"
             oninput="previewHeader()"
             style="width:100%;accent-color:var(--accent)">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-            <span>PequeÃ±o</span><span>Grande</span>
+            <span>Pequeño</span><span>Grande</span>
           </div>
         </div>
 
-        <!-- TamaÃ±o fuente datos -->
+        <!-- Tamaño fuente datos -->
         <div class="input-group">
-          <label>TamaÃ±o de datos (telÃ©fono, direcciÃ³n, RFC)
+          <label>Tamaño de datos (teléfono, dirección, RFC)
             <span id="valDataSize" style="color:var(--accent);font-weight:800;margin-left:6px">10pt</span>
           </label>
           <input type="range" id="cfgHeaderDataSize" min="7" max="16" step="1" value="10"
@@ -555,16 +555,16 @@ return QRCode;
             style="width:100%;accent-color:var(--accent)">
         </div>
 
-        <!-- AlineaciÃ³n -->
+        <!-- Alineación -->
         <div class="input-group">
-          <label>AlineaciÃ³n del encabezado</label>
+          <label>Alineación del encabezado</label>
           <div style="display:flex;gap:8px">
             <button id="alignLeft"   onclick="setAlign('left')"
-              style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-size:16px">â¬ Izquierda</button>
+              style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-size:16px">⬅ Izquierda</button>
             <button id="alignCenter" onclick="setAlign('center')"
-              style="flex:1;padding:10px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-light);cursor:pointer;font-size:16px">â¬ Centro</button>
+              style="flex:1;padding:10px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-light);cursor:pointer;font-size:16px">⬛ Centro</button>
             <button id="alignRight"  onclick="setAlign('right')"
-              style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-size:16px">â¡ Derecha</button>
+              style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-size:16px">➡ Derecha</button>
           </div>
         </div>
 
@@ -577,18 +577,18 @@ return QRCode;
           </div>
         </div>
 
-        <button class="btn btn-primary" onclick="saveSettings()">ð¾ Guardar configuraciÃ³n</button>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Guardar configuración</button>
       </div>
 
-      <!-- ââ TAMAÃO DE FUENTE E INTERLINEADO DEL TICKET ââ -->
+      <!-- ── TAMAÑO DE FUENTE E INTERLINEADO DEL TICKET ── -->
       <div class="settings-section">
-        <h3>ð Cuerpo del ticket â Fuente e interlineado</h3>
+        <h3>📄 Cuerpo del ticket — Fuente e interlineado</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
-          Ajusta quÃ© tan grandes se ven los productos y cuÃ¡nto espacio hay entre cada lÃ­nea.
+          Ajusta qué tan grandes se ven los productos y cuánto espacio hay entre cada línea.
         </p>
 
         <div class="input-group">
-          <label>TamaÃ±o de fuente â productos
+          <label>Tamaño de fuente — productos
             <span id="valBodySize" style="color:var(--accent);font-weight:800;margin-left:6px">10pt</span>
           </label>
           <input type="range" id="cfgTicketBodySize" min="7" max="14" step="0.5" value="10"
@@ -607,16 +607,16 @@ return QRCode;
             oninput="(() => { const v=parseFloat(this.value); document.getElementById('valLineH').textContent = v<=4.5?'Muy compacto':v<=5.5?'Normal':v<=7?'Espaciado':'Muy espaciado'; })()"
             style="width:100%;accent-color:var(--accent)">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-            <span>â¬ MÃ¡s compacto</span><span>MÃ¡s espaciado â¡</span>
+            <span>⬅ Más compacto</span><span>Más espaciado ➡</span>
           </div>
         </div>
       </div>
 
       <div class="settings-section">
-        <h3>ð¨ï¸ Impresora de Tickets (PDF carta)</h3>
+        <h3>🖨️ Impresora de Tickets (PDF carta)</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:10px">
-          Al hacer clic en "Completar Venta", el PDF se descarga automÃ¡ticamente. Para imprimir, Ã¡brelo y selecciona tu impresora de tickets.<br><br>
-          <strong>Tip:</strong> En Windows puedes ir a <em>ConfiguraciÃ³n â Impresoras â establecer impresora predeterminada</em> para que siempre seleccione la correcta.
+          Al hacer clic en "Completar Venta", el PDF se descarga automáticamente. Para imprimir, ábrelo y selecciona tu impresora de tickets.<br><br>
+          <strong>Tip:</strong> En Windows puedes ir a <em>Configuración → Impresoras → establecer impresora predeterminada</em> para que siempre seleccione la correcta.
         </p>
         <div class="input-group">
           <label>Nombre de tu impresora de tickets (solo referencia)</label>
@@ -625,12 +625,12 @@ return QRCode;
       </div>
 
       <div class="settings-section">
-        <h3>ð·ï¸ Impresora de Etiquetas (41Ã25mm)</h3>
+        <h3>🏷️ Impresora de Etiquetas (41×25mm)</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
-          Al imprimir etiquetas se abre la ventana de impresiÃ³n. Selecciona tu impresora tÃ©rmica y configura:<br>
-          â¢ TamaÃ±o de papel: <strong>41mm Ã 25mm</strong><br>
-          â¢ MÃ¡rgenes: <strong>Ninguno</strong><br>
-          â¢ Sin encabezados ni pies de pÃ¡gina
+          Al imprimir etiquetas se abre la ventana de impresión. Selecciona tu impresora térmica y configura:<br>
+          • Tamaño de papel: <strong>41mm × 25mm</strong><br>
+          • Márgenes: <strong>Ninguno</strong><br>
+          • Sin encabezados ni pies de página
         </p>
 
         <div class="input-group">
@@ -641,42 +641,42 @@ return QRCode;
         <!-- Fuente nombre -->
         <div class="input-group">
           <label>
-            TamaÃ±o de fuente â <strong>Nombre de la clienta</strong>
+            Tamaño de fuente — <strong>Nombre de la clienta</strong>
             <span id="lblNameSizeVal" style="color:var(--accent);font-weight:800;margin-left:6px">10pt</span>
           </label>
           <input type="range" id="cfgLabelNameSize" min="6" max="20" step="1" value="10"
             oninput="updateLabelPreview()"
             style="width:100%;accent-color:var(--accent);margin-top:4px">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px">
-            <span>Muy pequeÃ±o (6pt)</span><span>Grande (20pt)</span>
+            <span>Muy pequeño (6pt)</span><span>Grande (20pt)</span>
           </div>
         </div>
 
         <!-- Fuente precio -->
         <div class="input-group">
           <label>
-            TamaÃ±o de fuente â <strong>Precio total</strong>
+            Tamaño de fuente — <strong>Precio total</strong>
             <span id="lblPriceSizeVal" style="color:var(--accent);font-weight:800;margin-left:6px">16pt</span>
           </label>
           <input type="range" id="cfgLabelPriceSize" min="8" max="28" step="1" value="16"
             oninput="updateLabelPreview()"
             style="width:100%;accent-color:var(--accent);margin-top:4px">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px">
-            <span>Muy pequeÃ±o (8pt)</span><span>Grande (28pt)</span>
+            <span>Muy pequeño (8pt)</span><span>Grande (28pt)</span>
           </div>
         </div>
 
         <!-- Margen vertical (centrado) -->
         <div class="input-group">
           <label>
-            PosiciÃ³n vertical del contenido
+            Posición vertical del contenido
             <span id="lblMarginVal" style="color:var(--accent);font-weight:800;margin-left:6px">Centro</span>
           </label>
           <input type="range" id="cfgLabelMargin" min="0" max="8" step="0.5" value="2"
             oninput="updateLabelPreview()"
             style="width:100%;accent-color:var(--accent);margin-top:4px">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px">
-            <span>â¬ MÃ¡s arriba</span><span>â¬ MÃ¡s abajo</span>
+            <span>⬆ Más arriba</span><span>⬇ Más abajo</span>
           </div>
         </div>
 
@@ -691,7 +691,7 @@ return QRCode;
         <!-- Preview de etiqueta -->
         <div style="margin-bottom:14px">
           <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">
-            Vista previa (tamaÃ±o real 41Ã25mm)
+            Vista previa (tamaño real 41×25mm)
           </div>
           <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
             <div id="labelPreview" style="
@@ -707,40 +707,40 @@ return QRCode;
               <div id="prevDate"  style="font-family:Arial,sans-serif;font-size:7pt;color:#555;margin-top:2px;">29/03/2026</div>
             </div>
             <div style="font-size:11px;color:var(--muted);line-height:1.6">
-              ð Escala real 41Ã25mm<br>
-              âï¸ Ajusta los sliders<br>
+              📐 Escala real 41×25mm<br>
+              ✏️ Ajusta los sliders<br>
               &nbsp;&nbsp;&nbsp;para ver cambios
             </div>
           </div>
         </div>
 
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="saveSettings()">ð¾ Guardar tamaÃ±os</button>
-          <button class="btn btn-ghost" onclick="testLabel()">ð§ª Imprimir etiqueta de prueba</button>
+          <button class="btn btn-primary" onclick="saveSettings()">💾 Guardar tamaños</button>
+          <button class="btn btn-ghost" onclick="testLabel()">🧪 Imprimir etiqueta de prueba</button>
         </div>
       </div>
 
       <div class="settings-section">
-        <h3>ðï¸ Zona de peligro</h3>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Elimina todos los datos guardados. Esta acciÃ³n no se puede deshacer.</p>
-        <button class="btn btn-danger" onclick="resetAll()">â ï¸ Borrar todos los datos</button>
+        <h3>🗑️ Zona de peligro</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Elimina todos los datos guardados. Esta acción no se puede deshacer.</p>
+        <button class="btn btn-danger" onclick="resetAll()">⚠️ Borrar todos los datos</button>
       </div>
     </div>
 
   </div><!-- /#main -->
 </div><!-- /#app -->
 
-<!-- âââââââââââ MODAL: PRODUCTO âââââââââââ -->
+<!-- ═══════════ MODAL: PRODUCTO ═══════════ -->
 <div class="modal-bg" id="modalProduct">
   <div class="modal">
     <div class="modal-header">
       <h3 id="modalProductTitle">Agregar Producto</h3>
-      <button class="close-btn" onclick="closeProductModal()">Ã</button>
+      <button class="close-btn" onclick="closeProductModal()">×</button>
     </div>
     <div class="modal-body">
       <div class="input-group">
-        <label>CÃ³digo de barras (opcional)</label>
-        <input class="input" id="mBarcode" placeholder="Escanea o escribe el cÃ³digo"
+        <label>Código de barras (opcional)</label>
+        <input class="input" id="mBarcode" placeholder="Escanea o escribe el código"
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('mName').focus();}">
       </div>
       <div class="input-group">
@@ -769,40 +769,40 @@ return QRCode;
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeProductModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveProduct()">ð¾ Guardar</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 Guardar</button>
     </div>
   </div>
 </div>
 
-<!-- âââââââââââ MODAL: SCANNER âââââââââââ -->
+<!-- ═══════════ MODAL: SCANNER ═══════════ -->
 <div class="modal-bg" id="modalScanner">
   <div class="modal" style="max-width:360px">
     <div class="modal-header">
-      <h3>ð· Escanear cÃ³digo</h3>
-      <button class="close-btn" onclick="closeScanner()">Ã</button>
+      <h3>📷 Escanear código</h3>
+      <button class="close-btn" onclick="closeScanner()">×</button>
     </div>
     <div class="modal-body" style="padding:12px">
       <div id="scannerView" style="width:100%;border-radius:8px;overflow:hidden;background:#000;min-height:260px"></div>
       <div style="margin-top:10px;font-size:12px;color:var(--muted);text-align:center">
-        Apunta la cÃ¡mara al cÃ³digo de barras o QR
+        Apunta la cámara al código de barras o QR
       </div>
       <div id="scannerResult" style="margin-top:8px;display:none;background:var(--green-light);border:1px solid var(--green);border-radius:6px;padding:10px;font-size:13px;font-weight:700;color:var(--green)"></div>
     </div>
   </div>
 </div>
 
-<!-- âââââââââââ TOAST âââââââââââ -->
-<!-- âââââââââââ MODAL: EDITAR NOTA âââââââââââ -->
+<!-- ═══════════ TOAST ═══════════ -->
+<!-- ═══════════ MODAL: EDITAR NOTA ═══════════ -->
 <div class="modal-bg" id="modalEditNota">
   <div class="modal" style="max-width:600px">
     <div class="modal-header">
-      <h3>âï¸ Editar Nota Completa</h3>
-      <button class="close-btn" onclick="cerrarEditNota()">Ã</button>
+      <h3>✏️ Editar Nota Completa</h3>
+      <button class="close-btn" onclick="cerrarEditNota()">×</button>
     </div>
     <div class="modal-body">
       <!-- Nombre -->
       <div class="input-group">
-        <label>ð¤ Nombre de la clienta</label>
+        <label>👤 Nombre de la clienta</label>
         <input class="input" id="editNotaCliente" placeholder="Nombre de la clienta">
       </div>
 
@@ -811,30 +811,30 @@ return QRCode;
       <div id="editNotaItems" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px"></div>
 
       <!-- Agregar producto -->
-      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">â Agregar producto</div>
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">➕ Agregar producto</div>
       <div class="search-wrap" style="margin-bottom:4px">
-        <input class="input" id="editNotaSearch" placeholder="Busca por nombre o cÃ³digo..."
+        <input class="input" id="editNotaSearch" placeholder="Busca por nombre o código..."
           oninput="editNotaSearchProducts()" autocomplete="off">
         <div class="search-results" id="editNotaSearchResults" style="display:none;max-height:180px;overflow-y:auto"></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="cerrarEditNota()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarEditNota()">ð¾ Guardar cambios</button>
+      <button class="btn btn-primary" onclick="guardarEditNota()">💾 Guardar cambios</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
-<!-- âââââââââââ SCRIPT âââââââââââ -->
-<!-- âââââââââââ SCRIPT âââââââââââ -->
+<!-- ═══════════ SCRIPT ═══════════ -->
+<!-- ═══════════ SCRIPT ═══════════ -->
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-// âââ FIREBASE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// â ï¸ REEMPLAZA ESTOS VALORES CON TU NUEVO PROYECTO FIREBASE
+// ─── FIREBASE ─────────────────────────────────────────────────────────────────
+// ⚠️ REEMPLAZA ESTOS VALORES CON TU NUEVO PROYECTO FIREBASE
 const _fbCfg = {
   apiKey:            "AIzaSyAuJFzKFx1F35f-oD9rnYo01D2HJCGt_C8",
   authDomain:        "brandy-skincare-pos.firebaseapp.com",
@@ -850,9 +850,9 @@ try {
   _fbReady = true;
 } catch(e) { console.warn('Firebase init:', e.message); }
 
-// âââ STORAGE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
 const DB = {
-  // Carga: localStorage primero (instantÃ¡neo), luego Firebase
+  // Carga: localStorage primero (instantáneo), luego Firebase
   async load() {
     let local = null;
     try { local = JSON.parse(localStorage.getItem('naye_pos_backup')); } catch {}
@@ -882,28 +882,28 @@ const DB = {
   }
 };
 
-// âââ STATE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── STATE ────────────────────────────────────────────────────────────────────
 let products = [], sales = [], cuts = [];
 let cfg = {
   bizName:'MI NEGOCIO', phone:'', address:'', rfc:'',
-  msg:'Â¡Gracias por su compra! Vuelva pronto ð',
-  logo:'ðª', printerTicket:'', printerLabel:'',
+  msg:'¡Gracias por su compra! Vuelva pronto 😊',
+  logo:'🏪', printerTicket:'', printerLabel:'',
   labelNameSize:10, labelPriceSize:16, labelMargin:2, labelShowDate:true,
   customers:[],
   headerLogo:'',         // base64 de imagen de logo
-  headerNameSize:22,     // tamaÃ±o fuente nombre empresa
+  headerNameSize:22,     // tamaño fuente nombre empresa
   headerNameBold:true,   // negrita nombre empresa
   headerNameItalic:false,// cursiva nombre empresa
-  headerDataSize:10,     // tamaÃ±o datos (tel, dir, rfc)
-  headerAlign:'center',  // alineaciÃ³n: center, left, right
-  ticketBodySize: 10,    // tamaÃ±o fuente productos en ticket
+  headerDataSize:10,     // tamaño datos (tel, dir, rfc)
+  headerAlign:'center',  // alineación: center, left, right
+  ticketBodySize: 10,    // tamaño fuente productos en ticket
   ticketLineH: 5.5,      // interlineado entre productos
 };
 let cart = [], editProdId = null;
 let _descuentoNota = 0; // descuento global de la nota (en pesos)
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
-// âââ VISOR PDF ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── VISOR PDF ────────────────────────────────────────────────────────────────
 function abrirPDFVisor(doc) {
   var base64 = doc.output('datauristring');
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket PDF</title>'
@@ -929,15 +929,15 @@ function abrirPDFVisor(doc) {
   if (win) win.focus();
 }
 
-// âââ WHATSAPP WEB â misma pestaÃ±a siempre âââââââââââââââââââââââââââââââââââââ
-// Usa wa.html como puente para forzar la reutilizaciÃ³n de la misma pestaÃ±a.
+// ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
+// Usa wa.html como puente para forzar la reutilización de la misma pestaña.
 function abrirWA(url) {
   const bridgeUrl = 'wa.html?u=' + encodeURIComponent(url);
   const waTab = window.open(bridgeUrl, 'brandy_whatsapp');
   if (waTab) waTab.focus();
 }
 
-// âââ INIT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
   // 1. Arrancar con localStorage inmediatamente
   try {
@@ -966,7 +966,7 @@ async function init() {
     cfg      = { ...cfg, ...(data.cfg || {}) };
     updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
     updateConnectionStatus('online');
-    toast('ð¢ Sincronizado con la nube');
+    toast('🟢 Sincronizado con la nube');
   }).catch(() => updateConnectionStatus('offline'));
 
   // 4. Escuchar cambios en tiempo real
@@ -985,9 +985,9 @@ function updateConnectionStatus(status) {
   let el = document.getElementById('connStatus');
   if (!el) return;
   const map = {
-    connecting: ['ð¡', '#ca8a04', 'Conectando...'],
-    online:     ['ð¢', '#16a34a', 'En lÃ­nea'],
-    offline:    ['ð´', '#dc2626', 'Sin servidor'],
+    connecting: ['🟡', '#ca8a04', 'Conectando...'],
+    online:     ['🟢', '#16a34a', 'En línea'],
+    offline:    ['🔴', '#dc2626', 'Sin servidor'],
   };
   const [icon, color, label] = map[status] || map.offline;
   el.innerHTML = `<span style="color:${color};font-size:11px;font-weight:700">${icon} ${label}</span>`;
@@ -995,11 +995,11 @@ function updateConnectionStatus(status) {
 
 function updateHeader() {
   document.getElementById('hdrName').textContent = cfg.bizName;
-  document.getElementById('hdrLogo').textContent = cfg.logo || 'ðª';
-  document.title = cfg.bizName + ' â Punto de Venta';
+  document.getElementById('hdrLogo').textContent = cfg.logo || '🏪';
+  document.title = cfg.bizName + ' — Punto de Venta';
 }
 
-// âââ VIEWS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
 function showView(v) {
   ['pos','inventory','history','cut','settings'].forEach(id => {
     document.getElementById('view-' + id).style.display = id === v ? '' : 'none';
@@ -1015,7 +1015,7 @@ function showView(v) {
   if (v === 'pos') setTimeout(() => document.getElementById('posCustomer').focus(), 50);
 }
 
-// âââ TOAST ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── TOAST ────────────────────────────────────────────────────────────────────
 let _toastTimer;
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
@@ -1025,8 +1025,8 @@ function toast(msg, type = 'success') {
   _toastTimer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// âââ CART âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// âââ ÃNDICE ACTIVO EN RESULTADOS ââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CART ─────────────────────────────────────────────────────────────────────
+// ─── ÍNDICE ACTIVO EN RESULTADOS ──────────────────────────────────────────────
 let _searchIdx = -1;
 
 function searchProducts() {
@@ -1092,7 +1092,7 @@ function searchKeydown(e) {
     const q = document.getElementById('posSearch').value.trim();
     if (!q) return;
 
-    // Si hay un Ã­tem seleccionado con ââ, agregarlo
+    // Si hay un ítem seleccionado con ↑↓, agregarlo
     if (_searchIdx >= 0 && items[_searchIdx]) {
       const id = items[_searchIdx].dataset.id;
       addToCart(id);
@@ -1100,7 +1100,7 @@ function searchKeydown(e) {
       return;
     }
 
-    // Buscar exacto por cÃ³digo de barras
+    // Buscar exacto por código de barras
     const byBarcode = products.find(p => p.barcode && p.barcode === q);
     if (byBarcode) {
       addToCart(byBarcode.id);
@@ -1120,7 +1120,7 @@ function searchKeydown(e) {
       res.style.display = 'none';
       document.getElementById('posSearch').focus();
     } else if (filtered.length > 1 && items.length > 0) {
-      // Hay varios resultados â seleccionar el primero con â
+      // Hay varios resultados — seleccionar el primero con ↓
       _searchIdx = 0;
       highlightSearchItem(items, _searchIdx);
     }
@@ -1138,7 +1138,7 @@ function addToCart(id) {
   if (p.stock <= 0) { toast('Sin stock disponible', 'error'); return; }
   const ex = cart.find(i => i.id === id);
   if (ex) {
-    if (ex.qty >= p.stock) { toast('No hay mÃ¡s stock disponible', 'error'); return; }
+    if (ex.qty >= p.stock) { toast('No hay más stock disponible', 'error'); return; }
     ex.qty++;
   } else {
     cart.push({ id: p.id, name: p.name, buyPrice: p.buyPrice, sellPrice: p.sellPrice, qty: 1, stock: p.stock });
@@ -1153,7 +1153,7 @@ function changeQty(id, delta) {
   if (!item) return;
   const newQty = item.qty + delta;
   if (newQty < 1) { removeFromCart(id); return; }
-  if (newQty > item.stock) { toast('No hay mÃ¡s stock', 'error'); return; }
+  if (newQty > item.stock) { toast('No hay más stock', 'error'); return; }
   item.qty = newQty;
   updateCartUI();
 }
@@ -1162,7 +1162,7 @@ function setQty(id, val) {
   const item = cart.find(i => i.id === id);
   if (!item) return;
   const q = parseInt(val) || 1;
-  if (q > item.stock) { toast('No hay mÃ¡s stock', 'error'); return; }
+  if (q > item.stock) { toast('No hay más stock', 'error'); return; }
   item.qty = Math.max(1, q);
   updateCartUI();
 }
@@ -1173,7 +1173,7 @@ function removeFromCart(id) {
 }
 
 function clearCart() {
-  if (cart.length && !confirm('Â¿Limpiar el carrito?')) return;
+  if (cart.length && !confirm('¿Limpiar el carrito?')) return;
   cart = [];
   document.getElementById('posCustomer').value = '';
   updateCartUI();
@@ -1185,7 +1185,7 @@ function updateCartUI() {
 
   if (!cart.length) {
     _descuentoNota = 0;
-    wrap.innerHTML = '<div class="empty"><div class="icon">ð</div><div>Busca y agrega productos</div></div>';
+    wrap.innerHTML = '<div class="empty"><div class="icon">🛒</div><div>Busca y agrega productos</div></div>';
     summary.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Agrega productos para ver el total</div>';
     return;
   }
@@ -1223,7 +1223,7 @@ function updateCartUI() {
             <td><strong>${i.name}</strong>${desc > 0 ? `<br><span style="font-size:10px;color:var(--green);font-weight:700">-${desc}% desc.</span>` : ''}</td>
             <td style="text-align:center">
               <div class="qty-ctrl" style="justify-content:center">
-                <button onclick="changeQty('${i.id}',-1)">â</button>
+                <button onclick="changeQty('${i.id}',-1)">−</button>
                 <input type="number" value="${i.qty}" min="1" max="${i.stock}"
                   onchange="setQty('${i.id}',this.value)" style="width:40px;text-align:center;border:1px solid var(--border);border-radius:4px;padding:3px;font-size:13px">
                 <button onclick="changeQty('${i.id}',1)">+</button>
@@ -1240,7 +1240,7 @@ function updateCartUI() {
             </td>
             <td style="text-align:right;font-weight:700;color:${desc>0?'var(--green)':'inherit'}">${fmt(subt)}</td>
             <td style="text-align:center">
-              <button onclick="removeFromCart('${i.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer">Ã</button>
+              <button onclick="removeFromCart('${i.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer">×</button>
             </td>
           </tr>`;
         }).join('')}
@@ -1249,12 +1249,12 @@ function updateCartUI() {
 
   // Resumen lateral con descuento por nota
   summary.innerHTML = `
-    <div class="cart-total-row"><span>ArtÃ­culos:</span><span>${cart.reduce((s,i)=>s+i.qty,0)}</span></div>
+    <div class="cart-total-row"><span>Artículos:</span><span>${cart.reduce((s,i)=>s+i.qty,0)}</span></div>
     <div class="cart-total-row"><span>Subtotal:</span><span>${fmt(subtotal)}</span></div>
 
     <!-- Descuento por nota -->
     <div style="background:#fdf2f8;border:1.5px solid var(--border);border-radius:8px;padding:10px;margin:8px 0">
-      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;text-transform:uppercase">ð·ï¸ Descuento en nota</div>
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;text-transform:uppercase">🏷️ Descuento en nota</div>
       <div style="display:flex;gap:6px;align-items:center">
         <button onclick="aplicarDescuentoNota('pct')"
           style="flex:1;padding:6px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">
@@ -1264,7 +1264,7 @@ function updateCartUI() {
           style="flex:1;padding:6px;background:var(--green);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">
           $ Pesos
         </button>
-        ${_descuentoNota > 0 ? `<button onclick="quitarDescuentoNota()" style="padding:6px 8px;background:var(--red);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer">â</button>` : ''}
+        ${_descuentoNota > 0 ? `<button onclick="quitarDescuentoNota()" style="padding:6px 8px;background:var(--red);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer">✕</button>` : ''}
       </div>
       ${_descuentoNota > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--green);font-weight:700">Descuento aplicado: -${fmt(_descuentoNota)}</div>` : ''}
     </div>
@@ -1275,7 +1275,7 @@ function updateCartUI() {
     </div>
     ${_descuentoNota > 0 ? `<div style="font-size:11px;color:var(--muted);text-align:right">Antes del descuento: ${fmt(subtotal)}</div>` : ''}
     <div style="margin-top:8px;background:var(--green-light);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--green);font-weight:700">
-      ð° Ganancia estimada: ${fmt(profit)}
+      💰 Ganancia estimada: ${fmt(profit)}
     </div>`;
 }
 
@@ -1294,11 +1294,11 @@ function aplicarDescuentoNota(tipo) {
   }, 0);
 
   if (tipo === 'pct') {
-    const pct = parseFloat(prompt('Â¿QuÃ© porcentaje de descuento para la nota completa?\nEj: 10 para 10%'));
+    const pct = parseFloat(prompt('¿Qué porcentaje de descuento para la nota completa?\nEj: 10 para 10%'));
     if (isNaN(pct) || pct <= 0) return;
     _descuentoNota = subtotal * (Math.min(100, pct) / 100);
   } else {
-    const pesos = parseFloat(prompt('Â¿CuÃ¡ntos pesos de descuento para la nota completa?\nEj: 50'));
+    const pesos = parseFloat(prompt('¿Cuántos pesos de descuento para la nota completa?\nEj: 50'));
     if (isNaN(pesos) || pesos <= 0) return;
     _descuentoNota = Math.min(subtotal, pesos);
   }
@@ -1310,7 +1310,7 @@ function quitarDescuentoNota() {
   updateCartUI();
 }
 
-// âââ COMPLETE SALE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── COMPLETE SALE ─────────────────────────────────────────────────────────────
 function completeSale() {
   var customer = document.getElementById('posCustomer').value.trim();
   if (!customer) { toast('Escribe el nombre de la clienta', 'error'); return; }
@@ -1326,14 +1326,14 @@ function completeSale() {
     return '\u2022 ' + i.name + ' x' + i.qty + ' \u2014 $' + (precio * i.qty).toFixed(2);
   }).join(NL);
   var sep = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501';
-  var msgWA = String.fromCodePoint(127978) + ' ' + bld + (cfg.bizName || 'MI NEGOCIO') + bld + NL
-    + String.fromCodePoint(128197) + ' ' + new Date(sale.date).toLocaleDateString('es-MX') + NL
-    + String.fromCodePoint(128100) + ' ' + bld + 'Cliente: ' + sale.customer + bld + NL + NL
+  var msgWA = '🏪 *' + (cfg.bizName || 'MI NEGOCIO') + '*' + NL
+    + '📅 ' + new Date(sale.date).toLocaleDateString('es-MX') + NL
+    + '👤 *Cliente: ' + sale.customer + '*' + NL + NL
     + lineas + NL + NL
     + sep + NL
-    + String.fromCodePoint(128176) + ' ' + bld + 'TOTAL: $' + sale.total.toFixed(2) + bld + NL
+    + '💰 *TOTAL: $' + sale.total.toFixed(2) + '*' + NL
     + sep + NL
-    + (cfg.msg || '\u00A1Gracias por su compra!');
+    + (cfg.msg || '¡Gracias por su compra!');
   navigator.clipboard.writeText(msgWA).catch(function() {});
   toast('PDF abierto - Nota copiada para WhatsApp');
   clearCartUI();
@@ -1341,7 +1341,7 @@ function completeSale() {
   renderHistory();
 }
 
-// âââ LABEL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── LABEL ────────────────────────────────────────────────────────────────────
 function clearCartUI() {
   cart = [];
   _descuentoNota = 0;
@@ -1354,7 +1354,7 @@ function printLabelFromCart() {
   const customer = document.getElementById('posCustomer').value.trim();
   const total    = cart.reduce((s, i) => s + i.sellPrice * i.qty, 0);
   if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
-  if (!cart.length) { toast('El carrito estÃ¡ vacÃ­o', 'error'); return; }
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
 
   saveSaleFromCart();
   toast('Nota guardada en historial');
@@ -1428,7 +1428,7 @@ function testLabel() {
   printLabel('CLIENTA DE PRUEBA', 199.99);
 }
 
-// âââ QR CODE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── QR CODE ──────────────────────────────────────────────────────────────────
 function getSaleQRText(sale) {
   const d = new Date(sale.date);
   const lines = sale.items.map(i =>
@@ -1440,9 +1440,9 @@ function getSaleQRText(sale) {
     `Folio: #${sale.id.slice(-8).toUpperCase()}`,
     `Fecha: ${d.toLocaleDateString('es-MX')} ${d.toLocaleTimeString('es-MX')}`,
     `Cliente: ${sale.customer}`,
-    'âââââââââââââââââ',
+    '─────────────────',
     lines,
-    'âââââââââââââââââ',
+    '─────────────────',
     `TOTAL: $${sale.total.toFixed(2)}`,
   ].join('\n');
 }
@@ -1487,7 +1487,7 @@ function generateTicketPDF(sale) {
   let y = 14;
   const ln = (h) => { y += h; };
 
-  // ââ Config de tamaÃ±os ââ
+  // ── Config de tamaños ──
   const nameSize   = cfg.headerNameSize  || 20;
   const dataSize   = cfg.headerDataSize  || 9;
   const bodySize   = cfg.ticketBodySize  || 10;
@@ -1496,7 +1496,7 @@ function generateTicketPDF(sale) {
   const nameItal   = cfg.headerNameItalic === true;
   const jsPdfFont  = nameBold && nameItal ? 'bolditalic' : nameBold ? 'bold' : nameItal ? 'italic' : 'normal';
 
-  // ââ ENCABEZADO: Logo IZQUIERDA + Datos DERECHA ââ
+  // ── ENCABEZADO: Logo IZQUIERDA + Datos DERECHA ──
   const logoSize = 26;
   const logoX = PL;
   const dataX = PL + logoSize + 5; // texto empieza tras el logo
@@ -1509,7 +1509,7 @@ function generateTicketPDF(sale) {
     } catch {}
   }
 
-  // Nombre del negocio â alineado a la derecha del logo
+  // Nombre del negocio — alineado a la derecha del logo
   doc.setFontSize(nameSize); doc.setFont('helvetica', jsPdfFont);
   doc.text(cfg.bizName || 'MI NEGOCIO', dataX, y + 7);
   let yData = y + 7 + nameSize * 0.38;
@@ -1523,7 +1523,7 @@ function generateTicketPDF(sale) {
   y = Math.max(yStart + logoSize + 3, yData + 2);
   doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(4);
 
-  // ââ Datos de la venta ââ
+  // ── Datos de la venta ──
   const d = new Date(sale.date);
   doc.setFontSize(9); doc.setFont('helvetica','normal');
   const fechaStr = d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -1537,7 +1537,7 @@ function generateTicketPDF(sale) {
   ln(4);
   doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(4);
 
-  // ââ Encabezado tabla ââ
+  // ── Encabezado tabla ──
   doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
   doc.text('PRODUCTO', PL, y);
   doc.text('CANT',    PL+98, y, {align:'center'});
@@ -1545,11 +1545,11 @@ function generateTicketPDF(sale) {
   doc.text('SUBTOTAL', W-PR, y, {align:'right'});
   ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
-  // ââ Filas de productos ââ
+  // ── Filas de productos ──
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
     const maxChars = Math.floor(85 / (bodySize * 0.42));
-    const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'â¦' : item.name;
+    const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
     doc.text(String(item.qty),               PL+98,   y, {align:'center'});
     doc.text(fmt(item.sellPrice),            PL+128,  y, {align:'center'});
@@ -1561,22 +1561,22 @@ function generateTicketPDF(sale) {
 
   doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
 
-  // ââ Totales ââ
+  // ── Totales ──
   doc.setFontSize(10); doc.setFont('helvetica','normal');
   doc.text('Subtotal:', W-PR-60, y);
   doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(4);
-  doc.text(`No. artÃ­culos: ${sale.items.reduce((a,i)=>a+i.qty,0)}`, PL, y);
+  doc.text(`No. artículos: ${sale.items.reduce((a,i)=>a+i.qty,0)}`, PL, y);
   doc.setLineWidth(0.7); doc.line(W-PR-85, y, W-PR, y); ln(5);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
   doc.text('TOTAL A PAGAR:', W-PR-85, y);
   doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(10);
 
-  // ââ Pie de pÃ¡gina ââ
+  // ── Pie de página ──
   doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
   doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(60,60,60);
-  doc.text(cfg.msg || 'Â¡Gracias por su compra! Vuelva pronto ð', W/2, y, {align:'center'}); ln(5);
+  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(5);
   doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
-  doc.text('Comprobante de venta â ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'}); ln(5);
+  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'}); ln(5);
 
   // QR
   const qrDataUrl = makeQRDataURL(getSaleQRText(sale));
@@ -1593,13 +1593,13 @@ function generateTicketPDF(sale) {
   abrirPDFVisor(doc);
 }
 
-// âââ COMPARTIR POR WHATSAPP ââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// âââ GUARDAR NOTA EN HISTORIAL (sin imprimir PDF) âââââââââââââââââââââââââââââ
+// ─── COMPARTIR POR WHATSAPP ────────────────────────────────────────────────────
+// ─── GUARDAR NOTA EN HISTORIAL (sin imprimir PDF) ─────────────────────────────
 function saveSaleFromCart() {
   const customer = document.getElementById('posCustomer').value.trim();
   if (!customer || !cart.length) return null;
 
-  // Verificar si ya se guardÃ³ esta nota (para no duplicar)
+  // Verificar si ya se guardó esta nota (para no duplicar)
   if (window._currentSaleId) {
     return sales.find(s => s.id === window._currentSaleId) || null;
   }
@@ -1633,7 +1633,7 @@ function saveSaleFromCart() {
   sales.push(sale);
   saveAll();
 
-  // Revisar stock bajo despuÃ©s de la venta
+  // Revisar stock bajo después de la venta
   checkStockAlerts(products);
 
   window._currentSaleId = sale.id;
@@ -1643,7 +1643,7 @@ function saveSaleFromCart() {
 
 function waNumeroNuevoEnviar() {
   const num = document.getElementById('waNumeroNuevo').value.trim().replace(/\D/g,'');
-  if (num.length !== 10) { toast('Escribe los 10 dÃ­gitos del nÃºmero', 'error'); return; }
+  if (num.length !== 10) { toast('Escribe los 10 dígitos del número', 'error'); return; }
 
   const customer = document.getElementById('posCustomer').value.trim();
   if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
@@ -1656,16 +1656,16 @@ function waNumeroNuevoEnviar() {
     if (!sale) return;
     renderHistory();
     renderInventory();
-    toast('Venta guardada en historial â');
+    toast('Venta guardada en historial ✅');
   }
 
-  // Guardar nÃºmero en la venta
+  // Guardar número en la venta
   sale.phone = num;
   saveAll();
 
   // Construir mensaje
-  const lineas = sale.items.map(i => `â¢ ${i.name} x${i.qty} â $${(i.sellPrice*i.qty).toFixed(2)}`).join('\n');
-  const msg = `ðª *${cfg.bizName || 'MI NEGOCIO'}*\nð ${new Date(sale.date).toLocaleDateString('es-MX')}\nð¤ *${sale.customer}*\n\n${lineas}\n\nâââââââââââââ\nð° *TOTAL: $${sale.total.toFixed(2)}*\nâââââââââââââ\n${cfg.msg || 'Â¡Gracias por su compra!'}`;
+  const lineas = sale.items.map(i => `• ${i.name} x${i.qty} — $${(i.sellPrice*i.qty).toFixed(2)}`).join('\n');
+  const msg = `🏪 *${cfg.bizName || 'MI NEGOCIO'}*\n📅 ${new Date(sale.date).toLocaleDateString('es-MX')}\n👤 *${sale.customer}*\n\n${lineas}\n\n━━━━━━━━━━━━━\n💰 *TOTAL: $${sale.total.toFixed(2)}*\n━━━━━━━━━━━━━\n${cfg.msg || '¡Gracias por su compra!'}`;
 
   // Abrir directo la app de WhatsApp
   abrirWA(`https://web.whatsapp.com/send?phone=52${num}&text=${encodeURIComponent(msg)}`);
@@ -1679,7 +1679,7 @@ function waYEtiqueta() {
   if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
   // Primero WhatsApp
   shareLastWhatsApp();
-  // Luego etiqueta con pequeÃ±o delay para no chocar
+  // Luego etiqueta con pequeño delay para no chocar
   setTimeout(() => printLabelFromCart(), 600);
 }
 
@@ -1690,65 +1690,65 @@ function buildMsgFromCart() {
   const sale = saveSaleFromCart();
   if (!sale) return null;
   const lineas = sale.items.map(i =>
-    `â¢ ${i.name} Ã${i.qty} â ${fmt(i.sellPrice * i.qty)}`
+    `• ${i.name} ×${i.qty} — ${fmt(i.sellPrice * i.qty)}`
   ).join('\n');
   return {
     sale,
-    msg: `ðª *${cfg.bizName || 'MI NEGOCIO'}*
-ð ${new Date(sale.date).toLocaleDateString('es-MX')} ${new Date(sale.date).toLocaleTimeString('es-MX')}
-ð¤ *Cliente: ${sale.customer}*
+    msg: `🏪 *${cfg.bizName || 'MI NEGOCIO'}*
+📅 ${new Date(sale.date).toLocaleDateString('es-MX')} ${new Date(sale.date).toLocaleTimeString('es-MX')}
+👤 *Cliente: ${sale.customer}*
 
 ${lineas}
 
-âââââââââââââ
-ð° *TOTAL: ${fmt(sale.total)}*
-âââââââââââââ
-${cfg.msg || 'Â¡Gracias por su compra!'}`
+━━━━━━━━━━━━━
+💰 *TOTAL: ${fmt(sale.total)}*
+━━━━━━━━━━━━━
+${cfg.msg || '¡Gracias por su compra!'}`
   };
 }
 
-// F1 â Solo copia la nota al portapapeles (sin abrir WhatsApp)
+// F1 — Solo copia la nota al portapapeles (sin abrir WhatsApp)
 function copiarNota() {
-  if (!cart.length) { toast('El carrito estÃ¡ vacÃ­o', 'error'); return; }
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
   const r = buildMsgFromCart();
   if (!r) return;
   navigator.clipboard.writeText(r.msg).then(() => {
-    toast('ð Nota copiada â abre WhatsApp Web y pega con Ctrl+V', 'info');
+    toast('📋 Nota copiada — abre WhatsApp Web y pega con Ctrl+V', 'info');
   }).catch(() => {
-    toast('ð No se pudo copiar automÃ¡ticamente', 'error');
+    toast('📋 No se pudo copiar automáticamente', 'error');
   });
   renderHistory();
   clearCartUI();
 }
 
 function shareLastWhatsApp() {
-  // Mantener compatibilidad â ahora solo copia
+  // Mantener compatibilidad — ahora solo copia
   copiarNota();
 }
 
 function shareWhatsApp(sale) {
   const d = new Date(sale.date);
   const lineas = sale.items.map(i =>
-    `â¢ ${i.name} Ã${i.qty} â ${fmt(i.sellPrice * i.qty)}`
+    `• ${i.name} ×${i.qty} — ${fmt(i.sellPrice * i.qty)}`
   ).join('\n');
 
   const msg =
-`ðª *${cfg.bizName || 'MI NEGOCIO'}*
-ð ${d.toLocaleDateString('es-MX')} ${d.toLocaleTimeString('es-MX')}
-ð¤ *Cliente: ${sale.customer}*
+`🏪 *${cfg.bizName || 'MI NEGOCIO'}*
+📅 ${d.toLocaleDateString('es-MX')} ${d.toLocaleTimeString('es-MX')}
+👤 *Cliente: ${sale.customer}*
 
 ${lineas}
 
-âââââââââââââ
-ð° *TOTAL: ${fmt(sale.total)}*
-âââââââââââââ
-${cfg.msg || 'Â¡Gracias por su compra!'}`;
+━━━━━━━━━━━━━
+💰 *TOTAL: ${fmt(sale.total)}*
+━━━━━━━━━━━━━
+${cfg.msg || '¡Gracias por su compra!'}`;
 
   // Abre directo la app de WhatsApp en Windows (sin pasar por Chrome)
   abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
 }
 
-// âââ GENERAR PDF CORTE (descarga) âââââââââââââââââââââââââââââââââââââââââââââ
+// ─── GENERAR PDF CORTE (descarga) ─────────────────────────────────────────────
 function generateCutPDF(cut) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
@@ -1772,7 +1772,7 @@ function generateCutPDF(cut) {
   doc.setFont('helvetica','bold'); doc.setFontSize(13);
   [['Total de ventas:', String(cut.salesCount)],
    ['Total vendido:', fmt(cut.totalSold)],
-   ['Ganancia del dÃ­a:', fmt(cut.totalProfit)]
+   ['Ganancia del día:', fmt(cut.totalProfit)]
   ].forEach(([label, val]) => {
     doc.text(label, PL, y); doc.text(val, W-PR, y, {align:'right'}); ln(9);
   });
@@ -1786,7 +1786,7 @@ function generateCutPDF(cut) {
   (cut.saleIds || []).forEach(sid => {
     const s = sales.find(x => x.id === sid);
     if (!s) return;
-    doc.text(`â¢ ${s.customer}`, PL+4, y);
+    doc.text(`• ${s.customer}`, PL+4, y);
     doc.text(new Date(s.date).toLocaleTimeString('es-MX'), PL+90, y);
     doc.text(fmt(s.total), W-PR, y, {align:'right'});
     ln(6);
@@ -1796,7 +1796,7 @@ function generateCutPDF(cut) {
   abrirPDFVisor(doc);
 }
 
-// âââ CUT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CUT ──────────────────────────────────────────────────────────────────────
 function renderCut() {
   const today = new Date().toDateString();
   const todaySales = sales.filter(s => new Date(s.date).toDateString() === today && !s.inCut);
@@ -1833,7 +1833,7 @@ function renderCut() {
             <strong>${new Date(c.date).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong>
             <span style="color:var(--muted);font-size:12px;margin-left:8px">${new Date(c.date).toLocaleTimeString('es-MX')}</span>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="generateCutPDF(cuts.find(x=>x.id==='${c.id}'))">ð¨ï¸ Reimprimir corte</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateCutPDF(cuts.find(x=>x.id==='${c.id}'))">🖨️ Reimprimir corte</button>
         </div>
         <div style="display:flex;gap:16px;font-size:13px">
           <span>Ventas: <strong>${c.salesCount}</strong></span>
@@ -1863,11 +1863,11 @@ function doCut() {
   cuts.push(cut);
   saveAll();
   generateCutPDF(cut);
-  toast('Â¡Corte realizado! PDF descargado âï¸');
+  toast('¡Corte realizado! PDF descargado ✂️');
   renderCut();
 }
 
-// âââ HISTORY ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
 function renderHistory() {
   const list = document.getElementById('historyList');
   const q = (document.getElementById('histSearch')?.value || '').trim().toLowerCase();
@@ -1892,7 +1892,7 @@ function renderHistory() {
     summaryEl.innerHTML = `
       <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;padding:12px 16px">
         <div style="font-weight:700;color:var(--accent);margin-bottom:8px;font-size:13px">
-          ð Resumen â ${clientes.join(', ')}
+          📊 Resumen — ${clientes.join(', ')}
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
           <div>
@@ -1914,7 +1914,7 @@ function renderHistory() {
   }
 
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty"><div class="icon">ð</div><div>${q ? 'Sin ventas para "'+q+'"' : 'Sin ventas registradas'}</div></div>`;
+    list.innerHTML = `<div class="empty"><div class="icon">📋</div><div>${q ? 'Sin ventas para "'+q+'"' : 'Sin ventas registradas'}</div></div>`;
     return;
   }
 
@@ -1925,7 +1925,7 @@ function renderHistory() {
           <div>
             <strong style="font-size:15px">${s.customer}</strong>
             <span class="tag ${s.inCut ? 'tag-blue' : 'tag-green'}" style="margin-left:8px">${s.inCut ? 'En corte' : 'Completada'}</span><br>
-            <span style="font-size:11px;color:var(--muted)">${new Date(s.date).toLocaleString('es-MX')} Â· #${s.id.slice(-6).toUpperCase()}</span>
+            <span style="font-size:11px;color:var(--muted)">${new Date(s.date).toLocaleString('es-MX')} · #${s.id.slice(-6).toUpperCase()}</span>
           </div>
           <div style="text-align:right">
             <div style="font-weight:800;font-size:18px;color:var(--accent)">${fmt(s.total)}</div>
@@ -1945,28 +1945,28 @@ function renderHistory() {
         </table>
         <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
           <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick='generateTicketPDF(${JSON.stringify(s)})'>ð PDF</button>
-            <button class="btn btn-ghost btn-sm" onclick="printLabel('${escJs(s.customer)}',${s.total},'${s.date}')">ð·ï¸ Etiqueta</button>
-            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick='shareWhatsApp(${JSON.stringify(s)})'>ð² WhatsApp</button>
-            <button class="btn btn-sm" style="background:#f59e0b;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="editarNota('${s.id}')">âï¸ Editar</button>
-            <button class="btn btn-sm" style="background:var(--red);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="eliminarNota('${s.id}')">ðï¸ Eliminar</button>
+            <button class="btn btn-ghost btn-sm" onclick='generateTicketPDF(${JSON.stringify(s)})'>📄 PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="printLabel('${escJs(s.customer)}',${s.total},'${s.date}')">🏷️ Etiqueta</button>
+            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick='shareWhatsApp(${JSON.stringify(s)})'>📲 WhatsApp</button>
+            <button class="btn btn-sm" style="background:#f59e0b;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="editarNota('${s.id}')">✏️ Editar</button>
+            <button class="btn btn-sm" style="background:var(--red);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="eliminarNota('${s.id}')">🗑️ Eliminar</button>
           </div>
           <div style="text-align:center;flex-shrink:0">
             <div class="qr-placeholder" data-qr="${encodeURIComponent(getSaleQRText(s))}"
               style="width:80px;height:80px;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:white;display:flex;align-items:center;justify-content:center;">
             </div>
-            <div style="font-size:9px;color:var(--muted);margin-top:3px;text-align:center">ð· Escanear nota</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:3px;text-align:center">📷 Escanear nota</div>
           </div>
         </div>
       </div>
     </div>`).join('');
 
-  // Generar QRs despuÃ©s de que el DOM estÃ© listo
+  // Generar QRs después de que el DOM esté listo
   setTimeout(renderQRCodes, 50);
 }
 
-// âââ INVENTORY ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// âââ NAVEGACIÃN TECLADO EN INVENTARIO âââââââââââââââââââââââââââââââââââââââââ
+// ─── INVENTORY ────────────────────────────────────────────────────────────────
+// ─── NAVEGACIÓN TECLADO EN INVENTARIO ─────────────────────────────────────────
 let _invIdx = -1;
 
 function invSearchKeydown(e) {
@@ -2007,7 +2007,7 @@ function highlightInvRow(rows) {
   if (rows[_invIdx]) rows[_invIdx].scrollIntoView({ block: 'nearest' });
 }
 
-// âââ TOP 10 MÃS VENDIDOS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── TOP 10 MÁS VENDIDOS ──────────────────────────────────────────────────────
 function toggleTop10PC() {
   const panel = document.getElementById('top10Panel');
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
@@ -2030,13 +2030,13 @@ function toggleTop10PC() {
     .slice(0, 10);
 
   if (!top10.length) {
-    document.getElementById('top10PCList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Sin ventas registradas aÃºn</div>';
+    document.getElementById('top10PCList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Sin ventas registradas aún</div>';
     panel.style.display = '';
     return;
   }
 
   const maxQty = top10[0][1].qty;
-  const medallas = ['ð¥','ð¥','ð¥'];
+  const medallas = ['🥇','🥈','🥉'];
 
   document.getElementById('top10PCList').innerHTML = `
     <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -2053,7 +2053,7 @@ function toggleTop10PC() {
         ${top10.map(([name, data], i) => {
           const pct = Math.round(data.qty / maxQty * 100);
           const stockColor = data.stock === 0 ? 'var(--red)' : data.stock <= 10 ? 'var(--orange)' : 'var(--green)';
-          const stockIcon  = data.stock === 0 ? 'ð´' : data.stock <= 10 ? 'â ï¸' : 'â';
+          const stockIcon  = data.stock === 0 ? '🔴' : data.stock <= 10 ? '⚠️' : '✅';
           return `<tr style="border-bottom:1px solid var(--border)">
             <td style="padding:10px 12px;font-size:16px">${medallas[i] || (i+1)+'.'}</td>
             <td style="padding:10px 12px">
@@ -2070,7 +2070,7 @@ function toggleTop10PC() {
       </tbody>
     </table>
     <div style="padding:10px 12px;font-size:11px;color:var(--muted);text-align:center">
-      â ï¸ Stock en rojo o naranja = necesita surtirse pronto
+      ⚠️ Stock en rojo o naranja = necesita surtirse pronto
     </div>`;
 
   panel.style.display = '';
@@ -2079,7 +2079,7 @@ function toggleTop10PC() {
 function renderInventory() {
   const q = (document.getElementById('invSearch')?.value || '').toLowerCase();
   const list = q ? products.filter(p => p.name.toLowerCase().includes(q) || (p.barcode||'').includes(q)) : products;
-  document.getElementById('invCount').textContent = `${products.length} productos Â· ${list.length} mostrando`;
+  document.getElementById('invCount').textContent = `${products.length} productos · ${list.length} mostrando`;
 
   // Alerta de stock bajo
   const lowStock = products.filter(p => p.stock > 0 && p.stock <= 10);
@@ -2089,9 +2089,9 @@ function renderInventory() {
     alertEl.style.display = '';
     alertEl.innerHTML = `
       <div style="background:#fff7ed;border:1.5px solid #ea580c;border-radius:8px;padding:12px 16px">
-        <div style="font-weight:700;color:#ea580c;margin-bottom:8px;font-size:13px">â ï¸ ALERTA DE INVENTARIO BAJO</div>
-        ${sinStock.length ? `<div style="margin-bottom:6px;font-size:12px"><strong style="color:var(--red)">ð´ Sin stock (${sinStock.length}):</strong> ${sinStock.map(p=>`<span style="background:var(--red-light);color:var(--red);padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${p.name}</span>`).join('')}</div>` : ''}
-        ${lowStock.length ? `<div style="font-size:12px"><strong style="color:#ea580c">ð¡ PrÃ³ximos a agotarse (${lowStock.length}):</strong> ${lowStock.map(p=>`<span style="background:#fff7ed;color:#ea580c;border:1px solid #ea580c;padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${p.name} (${p.stock} pzs)</span>`).join('')}</div>` : ''}
+        <div style="font-weight:700;color:#ea580c;margin-bottom:8px;font-size:13px">⚠️ ALERTA DE INVENTARIO BAJO</div>
+        ${sinStock.length ? `<div style="margin-bottom:6px;font-size:12px"><strong style="color:var(--red)">🔴 Sin stock (${sinStock.length}):</strong> ${sinStock.map(p=>`<span style="background:var(--red-light);color:var(--red);padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${p.name}</span>`).join('')}</div>` : ''}
+        ${lowStock.length ? `<div style="font-size:12px"><strong style="color:#ea580c">🟡 Próximos a agotarse (${lowStock.length}):</strong> ${lowStock.map(p=>`<span style="background:#fff7ed;color:#ea580c;border:1px solid #ea580c;padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${p.name} (${p.stock} pzs)</span>`).join('')}</div>` : ''}
       </div>`;
   } else {
     alertEl.style.display = 'none';
@@ -2099,13 +2099,13 @@ function renderInventory() {
 
   const table = document.getElementById('inventoryTable');
   if (!list.length) {
-    table.innerHTML = '<div class="empty"><div class="icon">ð¦</div><div>' + (products.length ? 'Sin resultados' : 'No hay productos. Â¡Agrega el primero!') + '</div></div>';
+    table.innerHTML = '<div class="empty"><div class="icon">📦</div><div>' + (products.length ? 'Sin resultados' : 'No hay productos. ¡Agrega el primero!') + '</div></div>';
     return;
   }
 
   table.innerHTML = `<table>
     <thead><tr>
-      <th>CÃ³digo</th><th>Nombre</th>
+      <th>Código</th><th>Nombre</th>
       <th style="text-align:right">P. Compra</th>
       <th style="text-align:right">P. Venta</th>
       <th style="text-align:right">Utilidad</th>
@@ -2120,19 +2120,19 @@ function renderInventory() {
         const stockBadge = p.stock === 0
           ? ' <span class="tag tag-red">Sin stock</span>'
           : p.stock <= 10
-          ? ' <span class="tag tag-orange">â  Bajo</span>'
+          ? ' <span class="tag tag-orange">⚠ Bajo</span>'
           : '';
         return `<tr class="inv-row" data-id="${p.id}" style="cursor:pointer" onclick="openProductModal('${p.id}')"
           onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background=''">
-          <td style="font-size:11px;color:var(--muted)">${p.barcode||'â'}</td>
+          <td style="font-size:11px;color:var(--muted)">${p.barcode||'—'}</td>
           <td><strong>${p.name}</strong></td>
           <td style="text-align:right;color:var(--red)">${fmt(p.buyPrice)}</td>
           <td style="text-align:right;color:var(--green)">${fmt(p.sellPrice)}</td>
           <td style="text-align:right;color:var(--accent)">${fmt(util)} <span style="font-size:11px;color:var(--muted)">(${pct}%)</span></td>
           <td style="text-align:center"><span class="${stockCls}">${p.stock}</span>${stockBadge}</td>
           <td style="white-space:nowrap">
-            <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openProductModal('${p.id}')">âï¸</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">ðï¸</button>
+            <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openProductModal('${p.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">🗑️</button>
           </td>
         </tr>`;
       }).join('')}
@@ -2140,7 +2140,7 @@ function renderInventory() {
   </table>`;
 }
 
-// âââ REPORTES DE INVENTARIO âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── REPORTES DE INVENTARIO ───────────────────────────────────────────────────
 function reportePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
@@ -2152,7 +2152,7 @@ function reportePDF() {
   const bajoStock = products.filter(p => p.stock > 0 && p.stock <= 10);
   const bienStock = products.filter(p => p.stock > 10);
 
-  // ââ Encabezado ââ
+  // ── Encabezado ──
   doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);
   doc.text(cfg.bizName || 'MI NEGOCIO', W/2, y, {align:'center'}); ln(8);
 
@@ -2165,7 +2165,7 @@ function reportePDF() {
 
   doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(6);
 
-  // ââ Resumen en caja ââ
+  // ── Resumen en caja ──
   doc.setFillColor(248,248,250);
   doc.setDrawColor(200,200,210);
   doc.setLineWidth(0.3);
@@ -2198,7 +2198,7 @@ function reportePDF() {
   y += 10;
   doc.setLineWidth(0.4); doc.line(PL, y, W-PR, y); ln(7);
 
-  // ââ Encabezado de tabla ââ
+  // ── Encabezado de tabla ──
   doc.setFillColor(25,55,170);
   doc.rect(PL, y-4, W-PL-PR, 11, 'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
@@ -2210,7 +2210,7 @@ function reportePDF() {
   doc.text('ESTADO',    W-PR,    y+3, {align:'right'});
   ln(10); doc.setTextColor(0,0,0);
 
-  // ââ Filas ââ
+  // ── Filas ──
   const orden = [...sinStock, ...bajoStock, ...bienStock];
   let fila = 0;
   orden.forEach(p => {
@@ -2229,7 +2229,7 @@ function reportePDF() {
       doc.setFont('helvetica','bold'); doc.setTextColor(200,30,30);
       doc.text(name.toUpperCase(), PL+4, y);
       doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
-      doc.text(p.barcode||'â', PL+72, y);
+      doc.text(p.barcode||'—', PL+72, y);
       doc.text(`$${p.buyPrice.toFixed(2)}`,  PL+108, y, {align:'center'});
       doc.text(`$${p.sellPrice.toFixed(2)}`, PL+130, y, {align:'center'});
       doc.setFont('helvetica','bold'); doc.setTextColor(200,30,30);
@@ -2239,7 +2239,7 @@ function reportePDF() {
       doc.setFont('helvetica','bold'); doc.setTextColor(180,80,0);
       doc.text(name.toUpperCase(), PL+4, y);
       doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
-      doc.text(p.barcode||'â', PL+72, y);
+      doc.text(p.barcode||'—', PL+72, y);
       doc.text(`$${p.buyPrice.toFixed(2)}`,  PL+108, y, {align:'center'});
       doc.text(`$${p.sellPrice.toFixed(2)}`, PL+130, y, {align:'center'});
       doc.setFont('helvetica','bold'); doc.setTextColor(180,80,0);
@@ -2249,7 +2249,7 @@ function reportePDF() {
       doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
       doc.text(name, PL+4, y);
       doc.setTextColor(100,100,100);
-      doc.text(p.barcode||'â', PL+72, y);
+      doc.text(p.barcode||'—', PL+72, y);
       doc.text(`$${p.buyPrice.toFixed(2)}`,  PL+108, y, {align:'center'});
       doc.text(`$${p.sellPrice.toFixed(2)}`, PL+130, y, {align:'center'});
       doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
@@ -2264,9 +2264,9 @@ function reportePDF() {
     ln(9);
   });
 
-  // ââ Pie de pÃ¡gina ââ
+  // ── Pie de página ──
   doc.setTextColor(160,160,160); doc.setFont('helvetica','italic'); doc.setFontSize(8);
-  doc.text(`${cfg.bizName || 'MI NEGOCIO'} â Reporte generado automaticamente por el sistema de punto de venta`, W/2, 272, {align:'center'});
+  doc.text(`${cfg.bizName || 'MI NEGOCIO'} — Reporte generado automaticamente por el sistema de punto de venta`, W/2, 272, {align:'center'});
 
   abrirPDFVisor(doc);
   toast('Reporte PDF descargado');
@@ -2278,32 +2278,32 @@ function reporteWhatsApp() {
   const bienStock = products.filter(p => p.stock > 10);
   const fecha = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
 
-  let msg = `ð¦ *REPORTE DE INVENTARIO*\nðª ${cfg.bizName || 'MI NEGOCIO'}\nð ${fecha}\n`;
-  msg += `ââââââââââââââââââââ\n`;
-  msg += `ð *RESUMEN*\n`;
-  msg += `â Stock suficiente: ${bienStock.length} productos\n`;
-  msg += `â ï¸ PrÃ³ximos a agotarse: ${bajoStock.length} productos\n`;
-  msg += `ð´ Sin stock: ${sinStock.length} productos\n`;
+  let msg = `📦 *REPORTE DE INVENTARIO*\n🏪 ${cfg.bizName || 'MI NEGOCIO'}\n📅 ${fecha}\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📊 *RESUMEN*\n`;
+  msg += `✅ Stock suficiente: ${bienStock.length} productos\n`;
+  msg += `⚠️ Próximos a agotarse: ${bajoStock.length} productos\n`;
+  msg += `🔴 Sin stock: ${sinStock.length} productos\n`;
 
   if (sinStock.length) {
-    msg += `\nââââââââââââââââââââ\n`;
-    msg += `ð´ *SIN STOCK â REQUIEREN SURTIDO URGENTE*\n`;
-    sinStock.forEach(p => { msg += `  â¢ ${p.name}\n`; });
+    msg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `🔴 *SIN STOCK — REQUIEREN SURTIDO URGENTE*\n`;
+    sinStock.forEach(p => { msg += `  • ${p.name}\n`; });
   }
 
   if (bajoStock.length) {
-    msg += `\nââââââââââââââââââââ\n`;
-    msg += `â ï¸ *PRÃXIMOS A AGOTARSE (â¤10 piezas)*\n`;
-    bajoStock.forEach(p => { msg += `  â¢ ${p.name}: *${p.stock} pzs* â Venta: $${p.sellPrice.toFixed(2)}\n`; });
+    msg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `⚠️ *PRÓXIMOS A AGOTARSE (≤10 piezas)*\n`;
+    bajoStock.forEach(p => { msg += `  • ${p.name}: *${p.stock} pzs* — Venta: $${p.sellPrice.toFixed(2)}\n`; });
   }
 
   if (bienStock.length) {
-    msg += `\nââââââââââââââââââââ\n`;
-    msg += `â *STOCK SUFICIENTE*\n`;
-    bienStock.forEach(p => { msg += `  â¢ ${p.name}: ${p.stock} pzs\n`; });
+    msg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `✅ *STOCK SUFICIENTE*\n`;
+    bienStock.forEach(p => { msg += `  • ${p.name}: ${p.stock} pzs\n`; });
   }
 
-  msg += `\nââââââââââââââââââââ\n_Generado desde ${cfg.bizName || 'POS'}_`;
+  msg += `\n━━━━━━━━━━━━━━━━━━━━\n_Generado desde ${cfg.bizName || 'POS'}_`;
   abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
 }
 
@@ -2365,18 +2365,18 @@ function saveProduct() {
   saveAll();
   closeProductModal();
   renderInventory();
-  toast(editProdId ? 'Producto actualizado â' : 'Producto agregado â');
+  toast(editProdId ? 'Producto actualizado ✅' : 'Producto agregado ✅');
 }
 
 function deleteProduct(id) {
-  if (!confirm('Â¿Eliminar este producto?')) return;
+  if (!confirm('¿Eliminar este producto?')) return;
   products = products.filter(p => p.id !== id);
   saveAll();
   renderInventory();
   toast('Producto eliminado');
 }
 
-// âââ SETTINGS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
 function loadSettings() {
   document.getElementById('cfgBizName').value        = cfg.bizName  || '';
   document.getElementById('cfgPhone').value          = cfg.phone    || '';
@@ -2418,7 +2418,7 @@ function saveSettings() {
   cfg.phone         = document.getElementById('cfgPhone').value.trim();
   cfg.address       = document.getElementById('cfgAddress').value.trim();
   cfg.rfc           = document.getElementById('cfgRfc').value.trim();
-  cfg.msg           = document.getElementById('cfgMsg').value.trim()      || 'Â¡Gracias por su compra!';
+  cfg.msg           = document.getElementById('cfgMsg').value.trim()      || '¡Gracias por su compra!';
   cfg.printerTicket = document.getElementById('cfgPrinterTicket').value.trim();
   cfg.printerLabel  = document.getElementById('cfgPrinterLabel').value.trim();
   cfg.labelNameSize  = parseInt(document.getElementById('cfgLabelNameSize').value)  || 10;
@@ -2435,11 +2435,11 @@ function saveSettings() {
   cfg.ticketLineH    = parseFloat(document.getElementById('cfgTicketLineH')?.value)    || 5.5;
   saveAll();
   updateHeader();
-  toast('Â¡ConfiguraciÃ³n guardada!');
+  toast('¡Configuración guardada!');
 }
 
 function resetAll() {
-  if (!confirm('Â¿Seguro? Se borrarÃ¡n TODOS los datos (productos, ventas, cortes).')) return;
+  if (!confirm('¿Seguro? Se borrarán TODOS los datos (productos, ventas, cortes).')) return;
   localStorage.removeItem('naye_pos_backup');
   fetch('/api/data', {
     method: 'POST',
@@ -2448,7 +2448,7 @@ function resetAll() {
   }).finally(() => location.reload());
 }
 
-// âââ CONFIGURACIÃN DEL ENCABEZADO âââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CONFIGURACIÓN DEL ENCABEZADO ─────────────────────────────────────────────
 function handleLogoUpload(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2524,14 +2524,14 @@ function previewHeader() {
   box.innerHTML = html;
 }
 
-// âââ UTILS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UTILS ────────────────────────────────────────────────────────────────────
 function fmt(n)   { return '$' + (parseFloat(n)||0).toFixed(2); }
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escJs(s)  { return String(s).replace(/'/g,"\\'"); }
 function safe(s)   { return String(s).replace(/[^a-zA-Z0-9_\-]/g,'_'); }
 
-// âââ ALERTA DE STOCK BAJO âââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// âââ EDITAR NOTA COMPLETA âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── ALERTA DE STOCK BAJO ─────────────────────────────────────────────────────
+// ─── EDITAR NOTA COMPLETA ─────────────────────────────────────────────────────
 let _editNotaId = null;
 let _editItems  = [];
 
@@ -2551,7 +2551,7 @@ function editarNota(id) {
 function renderEditItems() {
   const box = document.getElementById('editNotaItems');
   if (!_editItems.length) {
-    box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:13px">Sin productos â agrega uno abajo</div>';
+    box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:13px">Sin productos — agrega uno abajo</div>';
     return;
   }
   const total = _editItems.reduce((t,i) => t + i.sellPrice*i.qty, 0);
@@ -2562,14 +2562,14 @@ function renderEditItems() {
         <div style="font-size:11px;color:var(--muted)">${fmt(item.sellPrice)} c/u</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
-        <button onclick="editItemQty(${i},-1)" style="width:28px;height:28px;border:1px solid var(--border);background:var(--surface2);border-radius:6px;cursor:pointer;font-size:16px">â</button>
+        <button onclick="editItemQty(${i},-1)" style="width:28px;height:28px;border:1px solid var(--border);background:var(--surface2);border-radius:6px;cursor:pointer;font-size:16px">−</button>
         <input type="number" value="${item.qty}" min="1"
           onchange="editItemQtySet(${i},this.value)"
           style="width:44px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:13px">
         <button onclick="editItemQty(${i},1)" style="width:28px;height:28px;border:1px solid var(--border);background:var(--surface2);border-radius:6px;cursor:pointer;font-size:16px">+</button>
       </div>
       <div style="font-weight:800;font-size:13px;color:var(--accent);min-width:60px;text-align:right">${fmt(item.sellPrice*item.qty)}</div>
-      <button onclick="editItemRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:700">â</button>
+      <button onclick="editItemRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:700">✕</button>
     </div>`).join('')
   + `<div style="padding:10px 14px;text-align:right;font-weight:800;font-size:15px;color:var(--accent);border-top:2px solid var(--border)">
       Total: ${fmt(total)}
@@ -2623,7 +2623,7 @@ function guardarEditNota() {
   const sale = sales.find(s => s.id === _editNotaId);
   if (!sale) return;
   const nuevoNombre = document.getElementById('editNotaCliente').value.trim();
-  if (!nuevoNombre) { toast('El nombre no puede estar vacÃ­o', 'error'); return; }
+  if (!nuevoNombre) { toast('El nombre no puede estar vacío', 'error'); return; }
   if (!_editItems.length) { toast('La nota debe tener al menos un producto', 'error'); return; }
 
   // Restaurar stock anterior y descontar el nuevo
@@ -2643,7 +2643,7 @@ function guardarEditNota() {
   renderHistory();
   renderInventory();
   cerrarEditNota();
-  toast('â Nota actualizada correctamente');
+  toast('✅ Nota actualizada correctamente');
 }
 
 function cerrarEditNota() {
@@ -2657,7 +2657,7 @@ function cerrarEditNota() {
 function eliminarNota(id) {
   const sale = sales.find(s => s.id === id);
   if (!sale) return;
-  if (!confirm(`Â¿Eliminar la nota de ${sale.customer} por ${fmt(sale.total)}?\n\nEl stock serÃ¡ restaurado.`)) return;
+  if (!confirm(`¿Eliminar la nota de ${sale.customer} por ${fmt(sale.total)}?\n\nEl stock será restaurado.`)) return;
   sale.items.forEach(item => {
     products = products.map(p => p.id===item.id ? {...p, stock:p.stock+item.qty} : p);
   });
@@ -2665,7 +2665,7 @@ function eliminarNota(id) {
   saveAll();
   renderHistory();
   renderInventory();
-  toast('ðï¸ Nota eliminada y stock restaurado');
+  toast('🗑️ Nota eliminada y stock restaurado');
 }
 
 function checkStockAlerts(updatedProducts) {
@@ -2674,15 +2674,15 @@ function checkStockAlerts(updatedProducts) {
 
   // Mostrar alerta visual
   lowItems.forEach(p => {
-    toast(`â ï¸ "${p.name}" â solo quedan ${p.stock} piezas`, 'error');
+    toast(`⚠️ "${p.name}" — solo quedan ${p.stock} piezas`, 'error');
   });
 
-  // Leer en voz alta con sÃ­ntesis de voz
+  // Leer en voz alta con síntesis de voz
   if ('speechSynthesis' in window) {
     lowItems.forEach((p, i) => {
       setTimeout(() => {
         const msg = new SpeechSynthesisUtterance(
-          `AtenciÃ³n. Inventario prÃ³ximo a agotarse. ${p.name}, quedan ${p.stock} piezas.`
+          `Atención. Inventario próximo a agotarse. ${p.name}, quedan ${p.stock} piezas.`
         );
         msg.lang = 'es-MX';
         msg.rate = 0.95;
@@ -2693,7 +2693,7 @@ function checkStockAlerts(updatedProducts) {
   }
 }
 
-// âââ ATAJOS DE TECLADO ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── ATAJOS DE TECLADO ────────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if (e.key === 'F1') { e.preventDefault(); copiarNota(); }
   if (e.key === 'F2') { e.preventDefault(); completeSale(); }
@@ -2701,7 +2701,7 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'F4') { e.preventDefault(); showView('pos'); }
   if (e.key === 'F5') { e.preventDefault(); showView('history'); }
 });
-// âââ ESCÃNER DE CÃMARA ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── ESCÁNER DE CÁMARA ────────────────────────────────────────────────────────
 let _scanner = null;
 
 function openScanner() {
@@ -2717,12 +2717,12 @@ function startScanner() {
     { facingMode: 'environment' },
     { fps: 10, qrbox: { width: 250, height: 180 } },
     (decodedText) => {
-      // CÃ³digo escaneado exitosamente
+      // Código escaneado exitosamente
       handleScan(decodedText);
     },
     () => {} // errores de frame ignorados
   ).catch(err => {
-    toast('No se pudo acceder a la cÃ¡mara: ' + err, 'error');
+    toast('No se pudo acceder a la cámara: ' + err, 'error');
     closeScanner();
   });
 }
@@ -2736,9 +2736,9 @@ function handleScan(code) {
     return;
   }
 
-  // Si no, buscar como cÃ³digo de barras en inventario
+  // Si no, buscar como código de barras en inventario
   document.getElementById('scannerResult').style.display = 'block';
-  document.getElementById('scannerResult').textContent = 'â CÃ³digo: ' + code;
+  document.getElementById('scannerResult').textContent = '✅ Código: ' + code;
 
   const prod = products.find(p => p.barcode === code);
   if (prod) {
@@ -2747,9 +2747,9 @@ function handleScan(code) {
     // Ir a VENTA y agregar producto
     showView('pos');
     addToCart(prod.id);
-    toast(`â ${prod.name} agregado al carrito`);
+    toast(`✅ ${prod.name} agregado al carrito`);
   } else {
-    // Poner el cÃ³digo en el buscador
+    // Poner el código en el buscador
     setTimeout(() => {
       _scanner.stop().catch(()=>{});
       document.getElementById('modalScanner').classList.remove('open');
@@ -2776,7 +2776,7 @@ function showSaleByQR(qrText) {
 
   // Mostrar en historial
   showView('history');
-  toast(`ð Nota de ${sale.customer} â ${fmt(sale.total)}`);
+  toast(`📋 Nota de ${sale.customer} — ${fmt(sale.total)}`);
 
   // Resaltar la venta
   setTimeout(() => {
@@ -2790,7 +2790,7 @@ function showSaleByQR(qrText) {
   }, 200);
 }
 
-// âââ LAYOUT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── LAYOUT ───────────────────────────────────────────────────────────────────
 function adjustLayout() {
   const layout = document.getElementById('pos-layout');
   if (!layout) return;
@@ -2807,7 +2807,7 @@ function adjustLayout() {
 window.addEventListener('resize', adjustLayout);
 adjustLayout();
 
-// âââ START ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── START ────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
