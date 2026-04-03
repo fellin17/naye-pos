@@ -1207,7 +1207,7 @@ function updateCartUI() {
             <td style="text-align:center">
               <div style="display:flex;align-items:center;gap:3px;justify-content:center">
                 <input type="number" value="${desc}" min="0" max="100" step="1"
-                  oninput="setDescuentoItem('${i.id}', this.value)"
+                  onchange="setDescuentoItem('${i.id}', this.value)"
                   style="width:38px;text-align:center;border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px;color:var(--accent)">
                 <span style="font-size:11px;color:var(--muted)">%</span>
               </div>
@@ -1548,7 +1548,8 @@ function generateTicketPDF(sale) {
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
-  doc.save(`ticket_${safe(sale.customer)}_${sale.id.slice(-6)}.pdf`);
+  const pdfBlob = doc.output('bloburl');
+  window.open(pdfBlob, 'naye_pdf');
 }
 
 // ─── COMPARTIR POR WHATSAPP ────────────────────────────────────────────────────
@@ -1751,7 +1752,8 @@ function generateCutPDF(cut) {
     if (y > 250) { doc.addPage(); y = 20; }
   });
 
-  doc.save(`corte_${d.toLocaleDateString('es-MX').replace(/\//g,'-')}.pdf`);
+  const pdfBlobCorte = doc.output('bloburl');
+  window.open(pdfBlobCorte, 'naye_pdf');
 }
 
 // ─── CUT ──────────────────────────────────────────────────────────────────────
@@ -2226,7 +2228,8 @@ function reportePDF() {
   doc.setTextColor(160,160,160); doc.setFont('helvetica','italic'); doc.setFontSize(8);
   doc.text(`${cfg.bizName || 'MI NEGOCIO'} — Reporte generado automaticamente por el sistema de punto de venta`, W/2, 272, {align:'center'});
 
-  doc.save(`reporte_inventario_${new Date().toLocaleDateString('es-MX').replace(/\//g,'-')}.pdf`);
+  const pdfBlobInv = doc.output('bloburl');
+  window.open(pdfBlobInv, 'naye_pdf');
   toast('Reporte PDF descargado');
 }
 

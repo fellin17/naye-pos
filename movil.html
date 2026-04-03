@@ -973,14 +973,19 @@ function updateCartUI() {
       </div>
       <!-- Descuento por producto -->
       <div style="display:flex;align-items:center;gap:8px;background:#fdf2f8;border-radius:8px;padding:6px 10px">
-        <span style="font-size:12px;color:#9d174d;font-weight:700">🏷️ Desc. producto:</span>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input type="number" value="${desc}" min="0" max="100" step="1"
-            oninput="setDescuentoItemMob('${i.id}', this.value)"
-            style="width:50px;padding:4px 6px;border:1.5px solid #f9a8d4;border-radius:6px;font-size:14px;font-weight:700;color:#be185d;text-align:center">
+        <span style="font-size:12px;color:#9d174d;font-weight:700">🏷️ Desc.:</span>
+        <div style="display:flex;align-items:center;gap:4px;flex:1">
+          <input type="number" id="desc_${i.id}" value="${desc}" min="0" max="100" step="1"
+            inputmode="numeric"
+            onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();aplicarDescuentoItemMob('${i.id}');this.blur();}"
+            style="flex:1;padding:8px 6px;border:1.5px solid #f9a8d4;border-radius:6px;font-size:16px;font-weight:700;color:#be185d;text-align:center">
           <span style="font-size:13px;color:#9d174d;font-weight:700">%</span>
+          <button onclick="aplicarDescuentoItemMob('${i.id}')"
+            style="background:linear-gradient(135deg,#be185d,#9d174d);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;white-space:nowrap">
+            ✓ Aplicar
+          </button>
         </div>
-        ${desc > 0 ? `<span style="font-size:11px;color:#16a34a;font-weight:700">-$${(i.sellPrice * (desc/100) * i.qty).toFixed(2)}</span>` : ''}
+        ${desc > 0 ? `<span style="font-size:11px;color:#16a34a;font-weight:700;white-space:nowrap">-$${(i.sellPrice * (desc/100) * i.qty).toFixed(2)}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -991,6 +996,19 @@ function setDescuentoItemMob(id, val) {
   if (item) {
     item.descuento = Math.min(100, Math.max(0, parseFloat(val) || 0));
     updateCartUI();
+  }
+}
+
+function aplicarDescuentoItemMob(id) {
+  const input = document.getElementById('desc_' + id);
+  if (!input) return;
+  const val = parseFloat(input.value) || 0;
+  const item = cart.find(i => i.id === id);
+  if (item) {
+    item.descuento = Math.min(100, Math.max(0, val));
+    input.blur(); // cerrar teclado
+    updateCartUI();
+    toast(`🏷️ Descuento ${item.descuento}% aplicado`, 'info');
   }
 }
 
