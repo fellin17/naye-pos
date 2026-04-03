@@ -266,23 +266,17 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
     </div>
   </div>
 
-  <!-- Enviar nota a contacto existente por WhatsApp -->
+  <!-- Mandar nota a contacto existente -->
   <div style="margin:0 0 12px;border:1.5px solid #25D366;border-radius:10px;padding:12px;background:#f0fdf4">
     <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:6px">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px"> WHATSAPP — ENVIAR NOTA A CONTACTO EXISTENTE
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px"> WHATSAPP — ENVIAR A CONTACTO EXISTENTE
     </div>
-    <button onclick="enviarNotaContactoExistente()"
-      style="width:100%;padding:13px;background:#25D366;color:white;border:none;border-radius:8px;font-weight:800;cursor:pointer;font-size:15px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:20px;height:20px">
-      📋 Copiar nota y abrir WhatsApp
+    <button onclick="mandarPorWhatsApp()"
+      style="width:100%;padding:14px;background:#25D366;color:white;border:none;border-radius:8px;font-weight:800;cursor:pointer;font-size:16px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:22px;height:22px">
+      Mandar por WhatsApp
     </button>
-    <div style="font-size:11px;color:#6b7280;margin-top:6px;text-align:center">
-      Copia la nota y abre WhatsApp — busca el contacto y pega con mantener presionado
-    </div>
   </div>
-
-  <div style="height:80px"></div>
-</div>
 
 <!-- ═══ TAB: NOTAS ═══ -->
 <div id="tab-notas" class="content" style="display:none">
@@ -480,6 +474,36 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
           💣 BORRAR TODO (notas + inventario)
         </button>
       </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL DESCUENTO -->
+<div id="descModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:22px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-weight:800;font-size:17px;color:#be185d">Descuento en nota</div>
+      <button onclick="descModalCerrar()" style="background:#f3f4f6;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">x</button>
+    </div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Subtotal: <strong id="descModalSubtotal"></strong></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:2px solid #f9a8d4;border-radius:10px;cursor:pointer;font-weight:700;font-size:15px">
+        <input type="radio" name="descTipo" value="pct" checked onchange="descModalCalc()"> % Porcentaje
+      </label>
+      <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:2px solid #f9a8d4;border-radius:10px;cursor:pointer;font-weight:700;font-size:15px">
+        <input type="radio" name="descTipo" value="pesos" onchange="descModalCalc()"> $ Pesos
+      </label>
+    </div>
+    <input type="number" id="descModalInput" inputmode="decimal" placeholder="0"
+      oninput="descModalCalc()"
+      style="width:100%;padding:16px;font-size:28px;font-weight:800;text-align:center;border:2px solid #f9a8d4;border-radius:12px;outline:none;margin-bottom:10px;color:#be185d">
+    <div id="descModalResult" style="text-align:center;font-size:15px;font-weight:700;color:#16a34a;min-height:24px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="descModalAplicar()" style="flex:1;padding:16px;background:linear-gradient(135deg,#be185d,#9d174d);color:white;border:none;border-radius:12px;font-weight:800;font-size:16px;cursor:pointer;touch-action:manipulation">
+        Aplicar
+      </button>
+      <button onclick="descModalQuitar()" style="padding:16px 18px;background:#fee2e2;color:#dc2626;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;touch-action:manipulation">
+        Quitar
+      </button>
     </div>
   </div>
 </div>
@@ -1030,24 +1054,35 @@ function aplicarDescuentoItemMob(id) {
 }
 
 function abrirDescuentoNota() {
-  const subtotal = cart.reduce((s, i) => {
-    const desc = i.descuento || 0;
-    return s + i.sellPrice * (1 - desc/100) * i.qty;
-  }, 0);
-
-  const opciones = ['% Porcentaje', '$ Pesos fijos', 'Quitar descuento'];
-  const tipo = prompt(`Subtotal: $${subtotal.toFixed(2)}\n\n¿Tipo de descuento en nota?\n1 - Porcentaje (%)\n2 - Pesos fijos ($)\n3 - Quitar descuento\n\nEscribe 1, 2 o 3:`);
-
-  if (tipo === '1') {
-    const pct = parseFloat(prompt('¿Qué porcentaje de descuento?\nEj: 10 para 10%'));
-    if (!isNaN(pct) && pct > 0) { _descuentoNota = subtotal * (Math.min(100,pct)/100); updateCartUI(); }
-  } else if (tipo === '2') {
-    const pesos = parseFloat(prompt('¿Cuántos pesos de descuento?\nEj: 50'));
-    if (!isNaN(pesos) && pesos > 0) { _descuentoNota = Math.min(subtotal, pesos); updateCartUI(); }
-  } else if (tipo === '3') {
-    _descuentoNota = 0; updateCartUI();
-  }
+  const subtotal = cart.reduce((s, i) => s + i.sellPrice * (1 - (i.descuento||0)/100) * i.qty, 0);
+  document.getElementById('descModalSubtotal').textContent = '$' + subtotal.toFixed(2);
+  document.getElementById('descModalInput').value = '';
+  document.getElementById('descModalResult').textContent = '';
+  document.getElementById('descModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('descModalInput').focus(), 100);
 }
+function descModalCalc() {
+  const subtotal = cart.reduce((s, i) => s + i.sellPrice * (1 - (i.descuento||0)/100) * i.qty, 0);
+  const tipo = document.querySelector('input[name="descTipo"]:checked').value;
+  const val = parseFloat(document.getElementById('descModalInput').value) || 0;
+  const descPesos = tipo === 'pct' ? subtotal * Math.min(100,val)/100 : Math.min(subtotal, val);
+  const res = document.getElementById('descModalResult');
+  res.textContent = val > 0 ? 'Descuento: -$' + descPesos.toFixed(2) + '  ->  Total: $' + (subtotal-descPesos).toFixed(2) : '';
+}
+function descModalAplicar() {
+  const subtotal = cart.reduce((s, i) => s + i.sellPrice * (1 - (i.descuento||0)/100) * i.qty, 0);
+  const tipo = document.querySelector('input[name="descTipo"]:checked').value;
+  const val = parseFloat(document.getElementById('descModalInput').value) || 0;
+  _descuentoNota = tipo === 'pct' ? subtotal * Math.min(100,val)/100 : Math.min(subtotal, val);
+  document.getElementById('descModal').style.display = 'none';
+  updateCartUI(); toast('Descuento aplicado');
+}
+function descModalQuitar() {
+  _descuentoNota = 0;
+  document.getElementById('descModal').style.display = 'none';
+  updateCartUI();
+}
+function descModalCerrar() { document.getElementById('descModal').style.display = 'none'; }
 
 function changeQtyMobile(id, delta) {
   const item = cart.find(i => i.id === id);
@@ -1086,12 +1121,58 @@ ${lineas}
 ━━━━━━━━━━━━━
 ${cfg.msg || '¡Gracias por su compra!'}`;
 
-  navigator.clipboard.writeText(msg).then(() => {
-    toast('📋 Nota copiada — abre WhatsApp y pega en el chat', 'info');
-    window.open('https://wa.me/', '_blank');
-  }).catch(() => {
-    toast('No se pudo copiar. Intenta de nuevo.', 'error');
-  });
+  const profit2 = cart.reduce((s, i) => {
+    const desc = i.descuento || 0;
+    return s + (i.sellPrice*(1-desc/100) - (i.buyPrice||0)) * i.qty;
+  }, 0) - (_descuentoNota||0);
+  sales.push({ id: Date.now().toString(), date: new Date().toISOString(), customer,
+    items: cart.map(i=>({...i})), total, profit: profit2, inCut: false });
+  saveData();
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  cart = []; _descuentoNota = 0;
+  document.getElementById('ventaCliente').value = '';
+  updateCartUI(); renderNotas();
+  toast('Nota guardada');
+}
+
+function mandarPorWhatsApp() {
+  if (!cart.length) { toast('El carrito esta vacio', 'error'); return; }
+  var customer = document.getElementById('ventaCliente').value.trim() || 'Cliente';
+  var subtotal = cart.reduce(function(s, i) {
+    var d = i.descuento || 0;
+    return s + i.sellPrice * (1 - d/100) * i.qty;
+  }, 0);
+  var total = Math.max(0, subtotal - (_descuentoNota || 0));
+  var NL = String.fromCharCode(10);
+  var lineas = cart.map(function(i) {
+    var d = i.descuento || 0;
+    var p = i.sellPrice * (1 - d/100);
+    return '* ' + i.name + ' x' + i.qty + ' - $' + (p * i.qty).toFixed(2);
+  }).join(NL);
+  var sep = '=============';
+  var msg = (cfg.bizName || 'MI NEGOCIO') + NL
+    + new Date().toLocaleDateString('es-MX') + NL
+    + 'Cliente: ' + customer + NL + NL
+    + lineas + NL + NL
+    + sep + NL
+    + 'TOTAL: $' + total.toFixed(2) + NL
+    + sep + NL
+    + (cfg.msg || 'Gracias por su compra!');
+  var profit = cart.reduce(function(s, i) {
+    var d = i.descuento || 0;
+    return s + (i.sellPrice*(1-d/100) - (i.buyPrice||0)) * i.qty;
+  }, 0) - (_descuentoNota||0);
+  sales.push({ id: Date.now().toString(), date: new Date().toISOString(),
+    customer: customer, items: cart.map(function(i){return Object.assign({},i);}),
+    total: total, profit: profit, inCut: false });
+  saveData();
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  cart = [];
+  _descuentoNota = 0;
+  document.getElementById('ventaCliente').value = '';
+  updateCartUI();
+  renderNotas();
+  toast('Nota guardada');
 }
 
 function waNumNuevoMobEnviar() {
