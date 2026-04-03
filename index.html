@@ -1548,8 +1548,9 @@ function generateTicketPDF(sale) {
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
-  const pdfBlob = doc.output('bloburl');
-  window.open(pdfBlob, 'naye_pdf');
+  const _pdfUrl = doc.output('bloburl');
+  const _pdfWin = window.open(_pdfUrl, 'naye_pdf_viewer');
+  if (_pdfWin) _pdfWin.focus();
 }
 
 // ─── COMPARTIR POR WHATSAPP ────────────────────────────────────────────────────
@@ -1752,8 +1753,9 @@ function generateCutPDF(cut) {
     if (y > 250) { doc.addPage(); y = 20; }
   });
 
-  const pdfBlobCorte = doc.output('bloburl');
-  window.open(pdfBlobCorte, 'naye_pdf');
+  const _pdfUrlCorte = doc.output('bloburl');
+  const _pdfWinCorte = window.open(_pdfUrlCorte, 'naye_pdf_viewer');
+  if (_pdfWinCorte) _pdfWinCorte.focus();
 }
 
 // ─── CUT ──────────────────────────────────────────────────────────────────────
@@ -2228,8 +2230,9 @@ function reportePDF() {
   doc.setTextColor(160,160,160); doc.setFont('helvetica','italic'); doc.setFontSize(8);
   doc.text(`${cfg.bizName || 'MI NEGOCIO'} — Reporte generado automaticamente por el sistema de punto de venta`, W/2, 272, {align:'center'});
 
-  const pdfBlobInv = doc.output('bloburl');
-  window.open(pdfBlobInv, 'naye_pdf');
+  const _pdfUrlInv = doc.output('bloburl');
+  const _pdfWinInv = window.open(_pdfUrlInv, 'naye_pdf_viewer');
+  if (_pdfWinInv) _pdfWinInv.focus();
   toast('Reporte PDF descargado');
 }
 
