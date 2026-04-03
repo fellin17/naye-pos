@@ -250,17 +250,34 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
     </div>
   </div>
 
-  <!-- Enviar a número nuevo -->
-  <div style="margin:0 0 12px;border:1.5px solid #25D366;border-radius:10px;padding:12px;background:#f0fdf4">
-    <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:8px;text-transform:uppercase">📲 Enviar nota a número nuevo</div>
+  <!-- Enviar a número nuevo por WhatsApp -->
+  <div style="margin:0 0 10px;border:1.5px solid #25D366;border-radius:10px;padding:12px;background:#f0fdf4">
+    <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:6px">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px"> WHATSAPP — ENVIAR NOTA A NÚMERO NUEVO
+    </div>
     <div style="display:flex;gap:8px">
       <input type="tel" id="waNumNuevoMob" placeholder="10 dígitos ej: 5512345678"
         maxlength="10" inputmode="numeric"
         style="flex:1;padding:12px;border:1px solid #86efac;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
       <button onclick="waNumNuevoMobEnviar()"
-        style="background:#25D366;color:white;border:none;border-radius:8px;padding:0 16px;font-weight:800;cursor:pointer;font-size:14px;touch-action:manipulation;white-space:nowrap">
-        Enviar
+        style="background:#25D366;color:white;border:none;border-radius:8px;padding:0 16px;font-weight:800;cursor:pointer;font-size:14px;touch-action:manipulation;white-space:nowrap;display:flex;align-items:center;gap:6px">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:16px;height:16px"> Enviar
       </button>
+    </div>
+  </div>
+
+  <!-- Enviar nota a contacto existente por WhatsApp -->
+  <div style="margin:0 0 12px;border:1.5px solid #25D366;border-radius:10px;padding:12px;background:#f0fdf4">
+    <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:6px">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px"> WHATSAPP — ENVIAR NOTA A CONTACTO EXISTENTE
+    </div>
+    <button onclick="enviarNotaContactoExistente()"
+      style="width:100%;padding:13px;background:#25D366;color:white;border:none;border-radius:8px;font-weight:800;cursor:pointer;font-size:15px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:20px;height:20px">
+      📋 Copiar nota y abrir WhatsApp
+    </button>
+    <div style="font-size:11px;color:#6b7280;margin-top:6px;text-align:center">
+      Copia la nota y abre WhatsApp — busca el contacto y pega con mantener presionado
     </div>
   </div>
 
@@ -1040,6 +1057,41 @@ function changeQtyMobile(id, delta) {
   else if (newQty > item.stock) { toast('Sin más stock', 'error'); return; }
   else { item.qty = newQty; }
   updateCartUI();
+}
+
+function enviarNotaContactoExistente() {
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
+  const customer = document.getElementById('ventaCliente').value.trim() || 'Cliente';
+
+  const subtotal = cart.reduce((s, i) => {
+    const desc = i.descuento || 0;
+    return s + i.sellPrice * (1 - desc/100) * i.qty;
+  }, 0);
+  const total = Math.max(0, subtotal - (_descuentoNota || 0));
+
+  const lineas = cart.map(i => {
+    const desc = i.descuento || 0;
+    const precio = i.sellPrice * (1 - desc/100);
+    return `• ${i.name} ×${i.qty} — $${(precio * i.qty).toFixed(2)}`;
+  }).join('\n');
+
+  const msg = `🏪 *${cfg.bizName || 'MI NEGOCIO'}*
+📅 ${new Date().toLocaleDateString('es-MX')}
+👤 *Cliente: ${customer}*
+
+${lineas}
+
+━━━━━━━━━━━━━
+💰 *TOTAL: $${total.toFixed(2)}*
+━━━━━━━━━━━━━
+${cfg.msg || '¡Gracias por su compra!'}`;
+
+  navigator.clipboard.writeText(msg).then(() => {
+    toast('📋 Nota copiada — abre WhatsApp y pega en el chat', 'info');
+    window.open('https://wa.me/', '_blank');
+  }).catch(() => {
+    toast('No se pudo copiar. Intenta de nuevo.', 'error');
+  });
 }
 
 function waNumNuevoMobEnviar() {
