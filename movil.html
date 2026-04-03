@@ -1149,15 +1149,15 @@ function mandarPorWhatsApp() {
     var p = i.sellPrice * (1 - d/100);
     return '* ' + i.name + ' x' + i.qty + ' - $' + (p * i.qty).toFixed(2);
   }).join(NL);
-  var sep = '=============';
-  var msg = (cfg.bizName || 'MI NEGOCIO') + NL
-    + new Date().toLocaleDateString('es-MX') + NL
-    + 'Cliente: ' + customer + NL + NL
+  var sep = '==========================';
+  var msg = '?? *' + (cfg.bizName || 'MI NEGOCIO') + '*' + NL
+    + '?? ' + new Date().toLocaleDateString('es-MX') + NL
+    + '?? *' + customer + '*' + NL + NL
     + lineas + NL + NL
     + sep + NL
-    + 'TOTAL: $' + total.toFixed(2) + NL
+    + '?? *TOTAL: $' + total.toFixed(2) + '*' + NL
     + sep + NL
-    + (cfg.msg || 'Gracias por su compra!');
+    + (cfg.msg || '¡Gracias por su compra!');
   var profit = cart.reduce(function(s, i) {
     var d = i.descuento || 0;
     return s + (i.sellPrice*(1-d/100) - (i.buyPrice||0)) * i.qty;
