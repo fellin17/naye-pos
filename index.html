@@ -340,12 +340,13 @@ return QRCode;
                 <button class="btn btn-primary btn-block" onclick="printLabelFromCart()" style="font-size:13px">
                   🏷️ Imprimir Etiqueta &nbsp;<kbd>F3</kbd>
                 </button>
-                <button class="btn btn-ghost btn-block" id="btnWA" onclick="shareLastWhatsApp()" style="font-size:13px;background:#25D366;color:white;border:none">
-                  📲 Enviar WhatsApp &nbsp;<kbd>F1</kbd>
+                <!-- Botón copiar nota al portapapeles -->
+                <button class="btn btn-ghost btn-block" onclick="copiarNota()" style="font-size:13px;background:#25D366;color:white;border:none">
+                  📋 Copiar nota &nbsp;<kbd>F1</kbd>
                 </button>
-                <!-- Enviar a número nuevo -->
+                <!-- Enviar a número nuevo por WhatsApp Web -->
                 <div style="border:1.5px solid #25D366;border-radius:8px;padding:10px;background:#f0fdf4">
-                  <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:6px;text-transform:uppercase">📲 Enviar a número nuevo (sin guardar)</div>
+                  <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:6px;text-transform:uppercase">📲 Enviar a número nuevo por WhatsApp Web</div>
                   <div style="display:flex;gap:6px">
                     <input type="tel" id="waNumeroNuevo" placeholder="10 dígitos ej: 5512345678"
                       maxlength="10" inputmode="numeric"
@@ -1554,20 +1555,18 @@ function waYEtiqueta() {
   setTimeout(() => printLabelFromCart(), 600);
 }
 
-function shareLastWhatsApp() {
-  const customer = document.getElementById('posCustomer').value.trim();
-  if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
-  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
-
+function buildMsgFromCart() {
+  if (!document.getElementById('posCustomer').value.trim()) {
+    document.getElementById('posCustomer').value = 'Cliente';
+  }
   const sale = saveSaleFromCart();
-  if (!sale) return;
-
+  if (!sale) return null;
   const lineas = sale.items.map(i =>
     `• ${i.name} ×${i.qty} — ${fmt(i.sellPrice * i.qty)}`
   ).join('\n');
-
-  const msg =
-`🏪 *${cfg.bizName || 'MI NEGOCIO'}*
+  return {
+    sale,
+    msg: `🏪 *${cfg.bizName || 'MI NEGOCIO'}*
 📅 ${new Date(sale.date).toLocaleDateString('es-MX')} ${new Date(sale.date).toLocaleTimeString('es-MX')}
 👤 *Cliente: ${sale.customer}*
 
@@ -1576,11 +1575,27 @@ ${lineas}
 ━━━━━━━━━━━━━
 💰 *TOTAL: ${fmt(sale.total)}*
 ━━━━━━━━━━━━━
-${cfg.msg || '¡Gracias por su compra!'}`;
+${cfg.msg || '¡Gracias por su compra!'}`
+  };
+}
 
-  toast('✅ Nota guardada en historial');
+// F1 — Solo copia la nota al portapapeles (sin abrir WhatsApp)
+function copiarNota() {
+  if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
+  const r = buildMsgFromCart();
+  if (!r) return;
+  navigator.clipboard.writeText(r.msg).then(() => {
+    toast('📋 Nota copiada — abre WhatsApp Web y pega con Ctrl+V', 'info');
+  }).catch(() => {
+    toast('📋 No se pudo copiar automáticamente', 'error');
+  });
+  renderHistory();
   clearCartUI();
-  abrirWA('https://web.whatsapp.com/send?text=' + encodeURIComponent(msg));
+}
+
+function shareLastWhatsApp() {
+  // Mantener compatibilidad — ahora solo copia
+  copiarNota();
 }
 
 function shareWhatsApp(sale) {
@@ -2552,7 +2567,7 @@ function checkStockAlerts(updatedProducts) {
 
 // ─── ATAJOS DE TECLADO ────────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'F1') { e.preventDefault(); shareLastWhatsApp(); }
+  if (e.key === 'F1') { e.preventDefault(); copiarNota(); }
   if (e.key === 'F2') { e.preventDefault(); completeSale(); }
   if (e.key === 'F3') { e.preventDefault(); printLabelFromCart(); }
   if (e.key === 'F4') { e.preventDefault(); showView('pos'); }
