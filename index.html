@@ -906,22 +906,29 @@ function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 // ─── VISOR PDF ────────────────────────────────────────────────────────────────
 function abrirPDFVisor(doc) {
   const base64 = doc.output('datauristring');
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket PDF</title>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#404040;display:flex;flex-direction:column;align-items:center;min-height:100vh}
-  .bar{width:100%;background:#323232;padding:10px 20px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:10}
-  .bar button{padding:8px 18px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer}
-  .btn-print{background:#4CAF50;color:white}.btn-close{background:#888;color:white}
-  .bar span{color:white;font-size:13px;font-family:sans-serif;flex:1}
-  iframe{width:816px;max-width:100%;height:calc(100vh - 56px);border:none}</style></head>
-  <body><div class="bar">
-    <span>📄 Ticket — presiona Imprimir para imprimir</span>
-    <button class="btn-print" onclick="document.querySelector('iframe').contentWindow.print()">🖨️ Imprimir (Ctrl+P)</button>
-    <button class="btn-close" onclick="window.close()">✕ Cerrar</button>
-  </div>
-  <iframe src="${base64}"></iframe>
-  <script>document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='p'){e.preventDefault();document.querySelector('iframe').contentWindow.print();}});</script>
-  </body></html>`;
-  const blob = new Blob([html], {type:'text/html'});
+  // Nota: no usamos <script> dentro del template para evitar que el parser
+  // de HTML lo cierre prematuramente. Ctrl+P funciona nativamente en Chrome.
+  const html = [
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket PDF</title>',
+    '<style>',
+    '*{margin:0;padding:0;box-sizing:border-box}',
+    'body{background:#404040;display:flex;flex-direction:column;align-items:center;min-height:100vh}',
+    '.bar{width:100%;background:#323232;padding:10px 20px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:10}',
+    '.bar button{padding:8px 18px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer}',
+    '.btn-print{background:#4CAF50;color:white}.btn-close{background:#888;color:white}',
+    '.bar span{color:white;font-size:13px;font-family:sans-serif;flex:1}',
+    'iframe{width:816px;max-width:100%;height:calc(100vh - 56px);border:none}',
+    '</style></head>',
+    '<body>',
+    '<div class="bar">',
+    '<span>📄 Ticket listo — Ctrl+P para imprimir</span>',
+    '<button class="btn-print" onclick="document.querySelector(\'iframe\').contentWindow.print()">🖨️ Imprimir</button>',
+    '<button class="btn-close" onclick="window.close()">✕ Cerrar</button>',
+    '</div>',
+    '<iframe src="' + base64 + '"></iframe>',
+    '</body></html>'
+  ].join('');
+  const blob = new Blob([html], {type: 'text/html'});
   const url = URL.createObjectURL(blob);
   const win = window.open(url, 'naye_pdf_viewer');
   if (win) win.focus();
