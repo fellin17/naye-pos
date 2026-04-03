@@ -1315,41 +1315,25 @@ function completeSale() {
   var customer = document.getElementById('posCustomer').value.trim();
   if (!customer) { toast('Escribe el nombre de la clienta', 'error'); return; }
   if (!cart.length) { toast('El carrito esta vacio', 'error'); return; }
-
   var sale = saveSaleFromCart();
   if (!sale) return;
-
-  // 1. Abrir PDF en pestana
   generateTicketPDF(sale);
-
-  // 2. Copiar nota en formato WhatsApp al portapapeles
+  var NL = String.fromCharCode(10);
   var lineas = sale.items.map(function(i) {
     var desc = i.descuento || 0;
     var precio = i.sellPrice * (1 - desc/100);
     return '* ' + i.name + ' x' + i.qty + ' - $' + (precio * i.qty).toFixed(2);
-  }).join('
-');
-
-  var msgWA = (cfg.bizName || 'MI NEGOCIO') + '
-'
-    + new Date(sale.date).toLocaleDateString('es-MX') + '
-'
-    + 'Cliente: ' + sale.customer + '
-
-'
-    + lineas + '
-
-'
-    + '━━━━━━━━━━━━━
-'
-    + 'TOTAL: $' + sale.total.toFixed(2) + '
-'
-    + '━━━━━━━━━━━━━
-'
+  }).join(NL);
+  var sep = String.fromCharCode(9473).repeat(13);
+  var msgWA = (cfg.bizName || 'MI NEGOCIO') + NL
+    + new Date(sale.date).toLocaleDateString('es-MX') + NL
+    + 'Cliente: ' + sale.customer + NL + NL
+    + lineas + NL + NL
+    + sep + NL
+    + 'TOTAL: $' + sale.total.toFixed(2) + NL
+    + sep + NL
     + (cfg.msg || 'Gracias por su compra!');
-
   navigator.clipboard.writeText(msgWA).catch(function() {});
-
   toast('PDF abierto - Nota copiada para WhatsApp');
   clearCartUI();
   renderInventory();
