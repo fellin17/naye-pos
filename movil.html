@@ -973,11 +973,11 @@ function mandarPorWhatsApp() {
     return '* '+i.name+' x'+i.qty+' - $'+(i.sellPrice*i.qty).toFixed(2);
   }).join(NL);
   var sep = '==========================';
-  var msg = '?? *'+(cfg.bizName||'MI NEGOCIO')+'*'+NL
-    +'?? '+new Date().toLocaleDateString('es-MX')+NL
-    +'?? *'+customer+'*'+NL+NL
+  var msg = '🏪 *'+(cfg.bizName||'MI NEGOCIO')+'*'+NL
+    +'📅 '+new Date().toLocaleDateString('es-MX')+NL
+    +'👤 *'+customer+'*'+NL+NL
     +lineas+NL+NL+sep+NL
-    +'?? *TOTAL: $'+total.toFixed(2)+'*'+NL+sep+NL
+    +'💰 *TOTAL: $'+total.toFixed(2)+'*'+NL+sep+NL
     +(cfg.msg||'¡Gracias por su compra!');
   var profit = cart.reduce(function(s,i){return s+(i.sellPrice-(i.buyPrice||0))*i.qty;},0);
   sales.push({id:Date.now().toString(),date:new Date().toISOString(),
