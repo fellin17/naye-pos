@@ -901,6 +901,7 @@ let cfg = {
 };
 let cart = [], editProdId = null;
 let _descuentoNota = 0; // descuento global de la nota (en pesos)
+let _lastScannedId = null; // último producto escaneado/agregado
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── VISOR PDF ────────────────────────────────────────────────────────────────
@@ -1136,13 +1137,18 @@ function addToCart(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   if (p.stock <= 0) { toast('Sin stock disponible', 'error'); return; }
-  const ex = cart.find(i => i.id === id);
-  if (ex) {
+  const exIdx = cart.findIndex(i => i.id === id);
+  if (exIdx >= 0) {
+    const ex = cart[exIdx];
     if (ex.qty >= p.stock) { toast('No hay más stock disponible', 'error'); return; }
     ex.qty++;
+    // Mover al inicio (último escaneado siempre arriba)
+    cart.splice(exIdx, 1);
+    cart.unshift(ex);
   } else {
-    cart.push({ id: p.id, name: p.name, buyPrice: p.buyPrice, sellPrice: p.sellPrice, qty: 1, stock: p.stock });
+    cart.unshift({ id: p.id, name: p.name, buyPrice: p.buyPrice, sellPrice: p.sellPrice, qty: 1, stock: p.stock });
   }
+  _lastScannedId = id;
   document.getElementById('posSearch').value = '';
   document.getElementById('searchResults').style.display = 'none';
   updateCartUI();
@@ -1169,12 +1175,14 @@ function setQty(id, val) {
 
 function removeFromCart(id) {
   cart = cart.filter(i => i.id !== id);
+  if (_lastScannedId === id) _lastScannedId = cart.length > 0 ? cart[0].id : null;
   updateCartUI();
 }
 
 function clearCart() {
   if (cart.length && !confirm('¿Limpiar el carrito?')) return;
   cart = [];
+  _lastScannedId = null;
   document.getElementById('posCustomer').value = '';
   updateCartUI();
 }
@@ -1218,8 +1226,9 @@ function updateCartUI() {
           const desc = i.descuento || 0;
           const precioConDesc = i.sellPrice * (1 - desc/100);
           const subt = precioConDesc * i.qty;
+          const isLast = i.id === _lastScannedId;
           return `
-          <tr>
+          <tr style="${isLast ? 'background:#fdf2f8;border-left:3px solid var(--accent);' : ''}">
             <td><strong>${i.name}</strong>${desc > 0 ? `<br><span style="font-size:10px;color:var(--green);font-weight:700">-${desc}% desc.</span>` : ''}</td>
             <td style="text-align:center">
               <div class="qty-ctrl" style="justify-content:center">
@@ -1345,6 +1354,7 @@ function completeSale() {
 function clearCartUI() {
   cart = [];
   _descuentoNota = 0;
+  _lastScannedId = null;
   window._currentSaleId = null;
   document.getElementById('posCustomer').value = '';
   updateCartUI();
@@ -1540,19 +1550,19 @@ function generateTicketPDF(sale) {
   // ── Encabezado tabla ──
   doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
   doc.text('PRODUCTO', PL, y);
-  doc.text('CANT',    PL+98, y, {align:'center'});
-  doc.text('P.UNIT.', PL+128, y, {align:'center'});
+  doc.text('CANT',    PL+112, y, {align:'center'});
+  doc.text('P.UNIT.', PL+140, y, {align:'center'});
   doc.text('SUBTOTAL', W-PR, y, {align:'right'});
   ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
   // ── Filas de productos ──
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
-    const maxChars = Math.floor(85 / (bodySize * 0.42));
+    const maxChars = Math.floor(120 / (bodySize * 0.42));
     const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
-    doc.text(String(item.qty),               PL+98,   y, {align:'center'});
-    doc.text(fmt(item.sellPrice),            PL+128,  y, {align:'center'});
+    doc.text(String(item.qty),               PL+112,  y, {align:'center'});
+    doc.text(fmt(item.sellPrice),            PL+140,  y, {align:'center'});
     doc.setFont('helvetica','bold');
     doc.text(fmt(item.sellPrice * item.qty), W-PR,    y, {align:'right'});
     doc.setFont('helvetica','normal');
@@ -2700,6 +2710,21 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'F3') { e.preventDefault(); printLabelFromCart(); }
   if (e.key === 'F4') { e.preventDefault(); showView('pos'); }
   if (e.key === 'F5') { e.preventDefault(); showView('history'); }
+
+  // Tecla "+" incrementa el último producto escaneado
+  if ((e.key === '+' || e.key === 'NumpadAdd') && !e.target.closest('input, textarea, select')) {
+    e.preventDefault();
+    if (cart.length > 0 && _lastScannedId) {
+      const item = cart.find(i => i.id === _lastScannedId);
+      if (item && item.qty < item.stock) {
+        item.qty++;
+        updateCartUI();
+        toast(`+1 ${item.name} (${item.qty} total)`, 'info');
+      } else if (item) {
+        toast('No hay más stock disponible', 'error');
+      }
+    }
+  }
 });
 // ─── ESCÁNER DE CÁMARA ────────────────────────────────────────────────────────
 let _scanner = null;
