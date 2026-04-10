@@ -1558,7 +1558,7 @@ function generateTicketPDF(sale) {
   // ── Filas de productos ──
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
-    const maxChars = Math.floor(120 / (bodySize * 0.42));
+    const maxChars = Math.floor(200 / (bodySize * 0.42));
     const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
     doc.text(String(item.qty),               PL+112,  y, {align:'center'});
