@@ -919,7 +919,7 @@ function abrirPDFVisor(doc) {
     + '</style></head><body>'
     + '<div class="bar">'
     + '<span>Ticket listo</span>'
-    + '<button class="btn-print" onclick="frames[0].print()">Imprimir (Ctrl+P)</button>'
+    + '<button class="btn-print" onclick="var f=document.querySelector(\'iframe\');if(f&&f.contentWindow){f.focus();f.contentWindow.print();}else{window.print();}">Imprimir (Ctrl+P)</button>'
     + '<button class="btn-close" onclick="window.close()">Cerrar</button>'
     + '</div>'
     + '<iframe src="' + base64 + '"></iframe>'
@@ -1558,6 +1558,19 @@ function generateTicketPDF(sale) {
   // ── Filas de productos ──
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
+    // ── Salto de página si se desborda ──
+    if (y > 255) {
+      doc.addPage();
+      y = 14;
+      // Encabezado de tabla repetido en la nueva página
+      doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
+      doc.text('PRODUCTO', PL, y);
+      doc.text('CANT',    PL+112, y, {align:'center'});
+      doc.text('P.UNIT.', PL+140, y, {align:'center'});
+      doc.text('SUBTOTAL', W-PR, y, {align:'right'});
+      ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
+      doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
+    }
     const maxChars = Math.floor(200 / (bodySize * 0.42));
     const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
@@ -1955,9 +1968,9 @@ function renderHistory() {
         </table>
         <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
           <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick='generateTicketPDF(${JSON.stringify(s)})'>📄 PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateTicketPDF(sales.find(x=>x.id==='${s.id}'))">📄 PDF</button>
             <button class="btn btn-ghost btn-sm" onclick="printLabel('${escJs(s.customer)}',${s.total},'${s.date}')">🏷️ Etiqueta</button>
-            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick='shareWhatsApp(${JSON.stringify(s)})'>📲 WhatsApp</button>
+            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="shareWhatsApp(sales.find(x=>x.id==='${s.id}'))">📲 WhatsApp</button>
             <button class="btn btn-sm" style="background:#f59e0b;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="editarNota('${s.id}')">✏️ Editar</button>
             <button class="btn btn-sm" style="background:var(--red);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="eliminarNota('${s.id}')">🗑️ Eliminar</button>
           </div>
