@@ -905,29 +905,42 @@ let _lastScannedId = null; // último producto escaneado/agregado
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
 // ─── VISOR PDF ────────────────────────────────────────────────────────────────
-function abrirPDFVisor(doc) {
-  var base64 = doc.output('datauristring');
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket PDF</title>'
-    + '<style>'
-    + '*{margin:0;padding:0;box-sizing:border-box}'
-    + 'body{background:#404040;display:flex;flex-direction:column;align-items:center;min-height:100vh}'
-    + '.bar{width:100%;background:#1a1a1a;padding:10px 20px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:10}'
-    + '.bar button{padding:9px 18px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer}'
-    + '.btn-print{background:#16a34a;color:white} .btn-close{background:#555;color:white}'
-    + '.bar span{color:white;font-size:13px;font-family:sans-serif;flex:1}'
-    + 'iframe{width:816px;max-width:100%;height:calc(100vh - 56px);border:none}'
-    + '</style></head><body>'
-    + '<div class="bar">'
-    + '<span>Ticket listo</span>'
-    + '<button class="btn-print" onclick="var f=document.querySelector(\'iframe\');if(f&&f.contentWindow){f.focus();f.contentWindow.print();}else{window.print();}">Imprimir (Ctrl+P)</button>'
-    + '<button class="btn-close" onclick="window.close()">Cerrar</button>'
-    + '</div>'
-    + '<iframe src="' + base64 + '"></iframe>'
-    + '</body></html>';
-  var blob = new Blob([html], {type: 'text/html'});
-  var url = URL.createObjectURL(blob);
-  var win = window.open(url, 'naye_pdf_viewer');
-  if (win) win.focus();
+function abrirPDFVisor(doc, nombreArchivo) {
+  var nombre = (nombreArchivo || 'ticket') + '.pdf';
+  try {
+    // 1. Intentar abrir en nueva pestaña con impresión automática
+    doc.autoPrint();
+    var blob = doc.output('blob');
+    var url  = URL.createObjectURL(blob);
+    var win  = window.open(url, '_blank');
+    if (win) {
+      win.focus();
+      // Limpiar la URL del blob después de 60s
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+      return;
+    }
+  } catch(e) {}
+  // 2. Fallback: descargar el PDF directo (funciona aunque los popups estén bloqueados)
+  try {
+    var blob2 = doc.output('blob');
+    var url2  = URL.createObjectURL(blob2);
+    var a = document.createElement('a');
+    a.href = url2; a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url2); }, 10000);
+    toast('PDF descargado ✅ — ábrelo para imprimir', 'success');
+  } catch(e2) {
+    // 3. Último recurso: data URI
+    var dataUri = doc.output('datauristring');
+    var a2 = document.createElement('a');
+    a2.href = dataUri; a2.download = nombre;
+    document.body.appendChild(a2);
+    a2.click();
+    document.body.removeChild(a2);
+    toast('PDF descargado ✅', 'success');
+  }
 }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
@@ -1613,10 +1626,7 @@ function generateTicketPDF(sale) {
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
-  abrirPDFVisor(doc);
-}
-
-// ─── COMPARTIR POR WHATSAPP ────────────────────────────────────────────────────
+  abrirPDFVisor(doc, 'ticket-' + sale.customer.replace(/\s+/g,'-').toLowerCase() + '-' + sale.id.slice(-6));
 // ─── GUARDAR NOTA EN HISTORIAL (sin imprimir PDF) ─────────────────────────────
 function saveSaleFromCart() {
   const customer = document.getElementById('posCustomer').value.trim();
