@@ -875,10 +875,19 @@ const DB = {
     try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
     if (_fbReady) _fbDoc.set(data).catch(e => console.warn('Firebase save:', e.message));
   },
-  // Escucha cambios en tiempo real
+  // Escucha cambios en tiempo real, regresa función para cancelar
   listen(cb) {
-    if (!_fbReady) return;
-    _fbDoc.onSnapshot(s => { if (s.exists) cb(s.data()); }, e => console.warn('listen:', e.message));
+    if (!_fbReady) return () => {};
+    const unsub = _fbDoc.onSnapshot(
+      s => { if (s.exists) cb(s.data()); },
+      e => {
+        console.warn('listen:', e.message);
+        // Si falla el listener, programar reconexión
+        updateConnectionStatus('offline');
+        _retryTimer = setTimeout(tryReconnect, 20000);
+      }
+    );
+    return unsub;
   }
 };
 
@@ -951,9 +960,46 @@ function abrirWA(url) {
   if (waTab) waTab.focus();
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// ─── RECONEXIÓN ───────────────────────────────────────────────────────────────
+let _retryTimer = null;
+let _fbListener = null;
+
+function applyData(data) {
+  if (!data) return;
+  products = data.products || products;
+  sales    = data.sales    || sales;
+  cuts     = data.cuts     || cuts;
+  cfg      = { ...cfg, ...(data.cfg || {}) };
+  updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
+  try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
+}
+
+function startListener() {
+  if (_fbListener) { try { _fbListener(); } catch {} }
+  _fbListener = null;
+  DB.listen(data => {
+    applyData(data);
+    updateConnectionStatus('online');
+  });
+}
+
+function tryReconnect() {
+  clearTimeout(_retryTimer);
+  updateConnectionStatus('connecting');
+  DB.load().then(data => {
+    if (data) { applyData(data); }
+    updateConnectionStatus('online');
+    toast('🟢 Reconectado con la nube');
+    startListener();
+  }).catch(() => {
+    updateConnectionStatus('offline');
+    // Reintento automático en 20 segundos
+    _retryTimer = setTimeout(tryReconnect, 20000);
+  });
+}
+
 async function init() {
-  // 1. Arrancar con localStorage inmediatamente
+  // 1. localStorage inmediato
   try {
     const local = JSON.parse(localStorage.getItem('naye_pos_backup') || 'null');
     if (local) {
@@ -964,48 +1010,41 @@ async function init() {
     }
   } catch {}
 
-  // 2. Renderizar todo YA (la app responde inmediatamente)
+  // 2. Renderizar de inmediato con datos locales
   updateHeader(); loadSettings(); renderInventory();
   renderCut(); renderHistory(); updateCartUI();
   document.getElementById('hdrFecha').textContent =
+    new Date().toLocaleDateString('es-MX', { weekday:'long', día:'numeric', month:'long', year:'numeric' });
+  document.getElementById('hdrFecha').textContent =
     new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  updateConnectionStatus('offline');
+  updateConnectionStatus('connecting');
 
-  // 3. Sincronizar Firebase en segundo plano
+  // 3. Conectar a Firebase con reintento automático
   DB.load().then(data => {
-    if (!data) return;
-    products = data.products || products;
-    sales    = data.sales    || sales;
-    cuts     = data.cuts     || cuts;
-    cfg      = { ...cfg, ...(data.cfg || {}) };
-    updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
+    if (data) { applyData(data); }
     updateConnectionStatus('online');
     toast('🟢 Sincronizado con la nube');
-  }).catch(() => updateConnectionStatus('offline'));
-
-  // 4. Escuchar cambios en tiempo real
-  DB.listen(data => {
-    products = data.products || products;
-    sales    = data.sales    || sales;
-    cuts     = data.cuts     || cuts;
-    cfg      = { ...cfg, ...(data.cfg || {}) };
-    updateHeader(); renderInventory(); renderCut(); renderHistory();
-    updateConnectionStatus('online');
-    try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
+    startListener();
+  }).catch(() => {
+    updateConnectionStatus('offline');
+    _retryTimer = setTimeout(tryReconnect, 20000);
   });
 }
 
 function updateConnectionStatus(status) {
-  let el = document.getElementById('connStatus');
+  const el = document.getElementById('connStatus');
   if (!el) return;
   const map = {
     connecting: ['🟡', '#ca8a04', 'Conectando...'],
     online:     ['🟢', '#16a34a', 'En línea'],
-    offline:    ['🔴', '#dc2626', 'Sin servidor'],
+    offline:    ['🔴', '#dc2626', 'Sin conexión — Toca para reconectar'],
   };
   const [icon, color, label] = map[status] || map.offline;
-  el.innerHTML = `<span style="color:${color};font-size:11px;font-weight:700">${icon} ${label}</span>`;
+  const cursor = status === 'offline' ? 'cursor:pointer' : '';
+  const onclick = status === 'offline' ? 'onclick="tryReconnect()"' : '';
+  el.innerHTML = `<span style="color:${color};font-size:11px;font-weight:700;${cursor}" ${onclick} title="Toca para reconectar">${icon} ${label}</span>`;
 }
+
 
 function updateHeader() {
   document.getElementById('hdrName').textContent = cfg.bizName;
@@ -1627,6 +1666,8 @@ function generateTicketPDF(sale) {
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
   abrirPDFVisor(doc, 'ticket-' + sale.customer.replace(/\s+/g,'-').toLowerCase() + '-' + sale.id.slice(-6));
+}
+
 // ─── GUARDAR NOTA EN HISTORIAL (sin imprimir PDF) ─────────────────────────────
 function saveSaleFromCart() {
   const customer = document.getElementById('posCustomer').value.trim();
