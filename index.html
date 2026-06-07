@@ -1644,6 +1644,19 @@ function renderQRCodes() {
 }
 
 
+// ─── WRAPPERS SEGUROS PARA BOTONES DEL HISTORIAL ─────────────────────────────
+function generateTicketPDFById(id) {
+  const sale = sales.find(s => s.id === id);
+  if (!sale) { toast('No se encontró la nota', 'error'); return; }
+  generateTicketPDF(sale);
+}
+
+function shareWhatsAppById(id) {
+  const sale = sales.find(s => s.id === id);
+  if (!sale) { toast('No se encontró la nota', 'error'); return; }
+  shareWhatsApp(sale);
+}
+
 function generateTicketPDF(sale) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
@@ -2109,9 +2122,9 @@ function renderHistory() {
         </table>
         <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
           <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick='generateTicketPDF(${JSON.stringify(s)})'>📄 PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateTicketPDFById('${s.id}')">📄 PDF</button>
             <button class="btn btn-ghost btn-sm" onclick="printLabel('${escJs(s.customer)}',${s.total},'${s.date}')">🏷️ Etiqueta</button>
-            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick='shareWhatsApp(${JSON.stringify(s)})'>📲 WhatsApp</button>
+            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="shareWhatsAppById('${s.id}')">📲 WhatsApp</button>
             <button class="btn btn-sm" style="background:#f59e0b;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="editarNota('${s.id}')">✏️ Editar</button>
             <button class="btn btn-sm" style="background:var(--red);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="eliminarNota('${s.id}')">🗑️ Eliminar</button>
           </div>
