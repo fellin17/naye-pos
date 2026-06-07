@@ -264,6 +264,7 @@ return QRCode;
 <body>
 <div id="app">
 
+
   <!-- HEADER -->
   <div id="header">
     <span class="logo" id="hdrLogo">🏪</span>
@@ -294,7 +295,7 @@ return QRCode;
         <div>
           <div class="input-group" style="margin-bottom:12px">
             <label>👤 Nombre de la clienta</label>
-            <input class="input" id="posCustomer" placeholder="Ej: María García"
+            <input class="input" id="posCustomer" placeholder="EJ: MARIA GARCIA" style="text-transform:uppercase"
               oninput="updateCartUI()"
               onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('posSearch').focus();}">
           </div>
@@ -467,11 +468,11 @@ return QRCode;
         <div class="form-grid-2">
           <div class="input-group">
             <label>Nombre del negocio *</label>
-            <input class="input" id="cfgBizName" placeholder="MI NEGOCIO">
+            <input class="input" id="cfgBizName" placeholder="MI NEGOCIO" style="text-transform:uppercase">
           </div>
           <div class="input-group">
             <label>RFC</label>
-            <input class="input" id="cfgRfc" placeholder="XAXX010101000">
+            <input class="input" id="cfgRfc" placeholder="XAXX010101000" style="text-transform:uppercase">
           </div>
         </div>
         <div class="form-grid-2">
@@ -481,12 +482,12 @@ return QRCode;
           </div>
           <div class="input-group">
             <label>Dirección</label>
-            <input class="input" id="cfgAddress" placeholder="Calle, Colonia, Ciudad">
+            <input class="input" id="cfgAddress" placeholder="CALLE, COLONIA, CIUDAD" style="text-transform:uppercase">
           </div>
         </div>
         <div class="input-group">
           <label>Mensaje de despedida en el ticket</label>
-          <input class="input" id="cfgMsg" placeholder="¡Gracias por su compra! Vuelva pronto">
+          <input class="input" id="cfgMsg" placeholder="GRACIAS POR SU COMPRA. VUELVA PRONTO" style="text-transform:uppercase">
         </div>
       </div>
 
@@ -745,7 +746,7 @@ return QRCode;
       </div>
       <div class="input-group">
         <label>Nombre del producto *</label>
-        <input class="input" id="mName" placeholder="Nombre del producto"
+        <input class="input" id="mName" placeholder="NOMBRE DEL PRODUCTO" style="text-transform:uppercase"
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('mBuyPrice').focus();}">
       </div>
       <div class="form-grid-2">
@@ -803,7 +804,7 @@ return QRCode;
       <!-- Nombre -->
       <div class="input-group">
         <label>👤 Nombre de la clienta</label>
-        <input class="input" id="editNotaCliente" placeholder="Nombre de la clienta">
+        <input class="input" id="editNotaCliente" placeholder="NOMBRE DE LA CLIENTA" style="text-transform:uppercase">
       </div>
 
       <!-- Productos actuales -->
@@ -875,19 +876,10 @@ const DB = {
     try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
     if (_fbReady) _fbDoc.set(data).catch(e => console.warn('Firebase save:', e.message));
   },
-  // Escucha cambios en tiempo real, regresa función para cancelar
+  // Escucha cambios en tiempo real
   listen(cb) {
-    if (!_fbReady) return () => {};
-    const unsub = _fbDoc.onSnapshot(
-      s => { if (s.exists) cb(s.data()); },
-      e => {
-        console.warn('listen:', e.message);
-        // Si falla el listener, programar reconexión
-        updateConnectionStatus('offline');
-        _retryTimer = setTimeout(tryReconnect, 20000);
-      }
-    );
-    return unsub;
+    if (!_fbReady) return;
+    _fbDoc.onSnapshot(s => { if (s.exists) cb(s.data()); }, e => console.warn('listen:', e.message));
   }
 };
 
@@ -913,43 +905,67 @@ let _descuentoNota = 0; // descuento global de la nota (en pesos)
 let _lastScannedId = null; // último producto escaneado/agregado
 function saveAll() { DB.save({ products, sales, cuts, cfg }); }
 
-// ─── VISOR PDF ────────────────────────────────────────────────────────────────
-function abrirPDFVisor(doc, nombreArchivo) {
-  var nombre = (nombreArchivo || 'ticket') + '.pdf';
+// ─── PERSISTENCIA DEL CARRITO (proteccion contra recarga por WiFi) ────────────
+function saveCart() {
   try {
-    // 1. Intentar abrir en nueva pestaña con impresión automática
-    doc.autoPrint();
-    var blob = doc.output('blob');
-    var url  = URL.createObjectURL(blob);
-    var win  = window.open(url, '_blank');
-    if (win) {
-      win.focus();
-      // Limpiar la URL del blob después de 60s
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
-      return;
-    }
+    var customer = document.getElementById('posCustomer') ? document.getElementById('posCustomer').value.toUpperCase() : '';
+    localStorage.setItem('naye_pos_cart', JSON.stringify({
+      cart: cart,
+      customer: customer,
+      descuentoNota: _descuentoNota,
+      currentSaleId: window._currentSaleId || null,
+      ts: Date.now()
+    }));
   } catch(e) {}
-  // 2. Fallback: descargar el PDF directo (funciona aunque los popups estén bloqueados)
+}
+
+function restoreCart() {
   try {
-    var blob2 = doc.output('blob');
-    var url2  = URL.createObjectURL(blob2);
-    var a = document.createElement('a');
-    a.href = url2; a.download = nombre;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url2); }, 10000);
-    toast('PDF descargado ✅ — ábrelo para imprimir', 'success');
-  } catch(e2) {
-    // 3. Último recurso: data URI
-    var dataUri = doc.output('datauristring');
-    var a2 = document.createElement('a');
-    a2.href = dataUri; a2.download = nombre;
-    document.body.appendChild(a2);
-    a2.click();
-    document.body.removeChild(a2);
-    toast('PDF descargado ✅', 'success');
-  }
+    var raw = localStorage.getItem('naye_pos_cart');
+    if (!raw) return;
+    var data = JSON.parse(raw);
+    if (!data || (Date.now() - data.ts) > 8 * 60 * 60 * 1000) return;
+    if (!data.cart || !data.cart.length) return;
+    cart = data.cart;
+    _descuentoNota = data.descuentoNota || 0;
+    window._currentSaleId = data.currentSaleId || null;
+    if (data.customer) {
+      var el = document.getElementById('posCustomer');
+      if (el) el.value = data.customer;
+    }
+    updateCartUI();
+    toast('🛒 Nota restaurada automaticamente', 'info');
+  } catch(e) {}
+}
+
+function clearCartBackup() {
+  try { localStorage.removeItem('naye_pos_cart'); } catch(e) {}
+}
+
+// ─── VISOR PDF ────────────────────────────────────────────────────────────────
+function abrirPDFVisor(doc) {
+  var base64 = doc.output('datauristring');
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket PDF</title>'
+    + '<style>'
+    + '*{margin:0;padding:0;box-sizing:border-box}'
+    + 'body{background:#404040;display:flex;flex-direction:column;align-items:center;min-height:100vh}'
+    + '.bar{width:100%;background:#1a1a1a;padding:10px 20px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:10}'
+    + '.bar button{padding:9px 18px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer}'
+    + '.btn-print{background:#16a34a;color:white} .btn-close{background:#555;color:white}'
+    + '.bar span{color:white;font-size:13px;font-family:sans-serif;flex:1}'
+    + 'iframe{width:816px;max-width:100%;height:calc(100vh - 56px);border:none}'
+    + '</style></head><body>'
+    + '<div class="bar">'
+    + '<span>Ticket listo</span>'
+    + '<button class="btn-print" onclick="frames[0].print()">Imprimir (Ctrl+P)</button>'
+    + '<button class="btn-close" onclick="window.close()">Cerrar</button>'
+    + '</div>'
+    + '<iframe src="' + base64 + '"></iframe>'
+    + '</body></html>';
+  var blob = new Blob([html], {type: 'text/html'});
+  var url = URL.createObjectURL(blob);
+  var win = window.open(url, 'naye_pdf_viewer');
+  if (win) win.focus();
 }
 
 // ─── WHATSAPP WEB — misma pestaña siempre ─────────────────────────────────────
@@ -960,46 +976,113 @@ function abrirWA(url) {
   if (waTab) waTab.focus();
 }
 
-// ─── RECONEXIÓN ───────────────────────────────────────────────────────────────
-let _retryTimer = null;
-let _fbListener = null;
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 
-function applyData(data) {
-  if (!data) return;
-  products = data.products || products;
-  sales    = data.sales    || sales;
-  cuts     = data.cuts     || cuts;
-  cfg      = { ...cfg, ...(data.cfg || {}) };
-  updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
-  try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
+
+// ─── BIENVENIDA POR VOZ ───────────────────────────────────────────────────────
+const _frasesBienvenida = [
+    "Buenos días. Qué gusto tenerte aquí. Será un placer trabajar contigo hoy.",
+    "Hola. Listas para un gran día de ventas. El éxito está de tu lado.",
+    "Bienvenida. Cada venta de hoy es un paso más hacia tus metas.",
+    "Hola. Tu esfuerzo de hoy es el éxito de mañana. Vamos con todo.",
+    "Bienvenida. Confía en tu trabajo, los resultados siempre llegan.",
+    "Hola. Hoy es un gran día para hacer grandes cosas. ¡Adelante!",
+    "Bienvenida. Tu constancia es tu superpoder. No lo subestimes.",
+    "Hola. Cada clienta que sale feliz es tu mejor publicidad.",
+    "Bienvenida. Las grandes cosas nunca vienen de zonas de confort.",
+    "Hola. Sonríe, trabaja duro y haz que suceda. ¡Tú puedes!",
+    "Bienvenida. Tu negocio crece porque tú no te rindes. Sigue así.",
+    "Hola. Hoy decides hacer que las cosas pasen. Será un gusto trabajar contigo.",
+    "Bienvenida. Un día a la vez, una venta a la vez. ¡Vas muy bien!",
+    "Hola. El trabajo duro y la dedicación siempre dan frutos.",
+    "Bienvenida. Cada día trae nuevas oportunidades. ¡Aprovéchalas!"
+  ];
+
+function mostrarBienvenida() {
+  if (!window.speechSynthesis) return; // navegador sin soporte
+
+  // Esperar a que las voces estén listas
+  function hablar() {
+    const synth = window.speechSynthesis;
+    const frase = _frasesBienvenida[Math.floor(Math.random() * _frasesBienvenida.length)];
+    const negocio = (cfg.bizName || 'mi negocio');
+
+    const texto = negocio + '. ' + frase + '. ¡Será un gusto trabajar contigo!';
+
+    const utt = new SpeechSynthesisUtterance(texto);
+    utt.lang  = 'es-MX';
+    utt.rate  = 0.92;   // un poco más lento, más natural
+    utt.pitch = 1.05;   // tono ligeramente más alto
+    utt.volume = 1;
+
+    // Buscar voz en español, preferir femenina
+    const voces = synth.getVoices();
+    const vozEs = voces.find(v => v.lang === 'es-MX' && v.name.toLowerCase().includes('female'))
+                || voces.find(v => v.lang === 'es-MX')
+                || voces.find(v => v.lang.startsWith('es'))
+                || null;
+    if (vozEs) utt.voice = vozEs;
+
+    synth.cancel(); // cancelar cualquier cosa previa
+    synth.speak(utt);
+  }
+
+  // Las voces pueden no estar listas al instante
+  if (window.speechSynthesis.getVoices().length > 0) {
+    hablar();
+  } else {
+    window.speechSynthesis.addEventListener('voiceschanged', hablar, { once: true });
+  }
 }
 
-function startListener() {
-  if (_fbListener) { try { _fbListener(); } catch {} }
-  _fbListener = null;
-  DB.listen(data => {
-    applyData(data);
-    updateConnectionStatus('online');
-  });
+function cerrarBienvenida() {
+  // Ya no se usa (no hay modal), pero se deja por compatibilidad
 }
 
-function tryReconnect() {
-  clearTimeout(_retryTimer);
-  updateConnectionStatus('connecting');
-  DB.load().then(data => {
-    if (data) { applyData(data); }
-    updateConnectionStatus('online');
-    toast('🟢 Reconectado con la nube');
-    startListener();
-  }).catch(() => {
-    updateConnectionStatus('offline');
-    // Reintento automático en 20 segundos
-    _retryTimer = setTimeout(tryReconnect, 20000);
+// ─── MIGRACIÓN A MAYÚSCULAS (convierte todos los datos guardados) ──────────────
+function migrateToUpperCase() {
+  let changed = false;
+
+  // Productos: nombre en mayúsculas
+  products = products.map(p => {
+    const newName = (p.name || '').toUpperCase();
+    if (newName !== p.name) { changed = true; return { ...p, name: newName }; }
+    return p;
   });
+
+  // Ventas: nombre de cliente e items en mayúsculas
+  sales = sales.map(s => {
+    const newCustomer = (s.customer || '').toUpperCase();
+    const newItems = s.items.map(i => ({ ...i, name: (i.name || '').toUpperCase() }));
+    const customerChanged = newCustomer !== s.customer;
+    const itemsChanged = newItems.some((ni, idx) => ni.name !== s.items[idx].name);
+    if (customerChanged || itemsChanged) {
+      changed = true;
+      return { ...s, customer: newCustomer, items: newItems };
+    }
+    return s;
+  });
+
+  // Config: nombre del negocio, dirección, RFC, mensaje
+  const newBizName = (cfg.bizName || '').toUpperCase();
+  const newAddress = (cfg.address || '').toUpperCase();
+  const newRfc     = (cfg.rfc     || '').toUpperCase();
+  const newMsg     = (cfg.msg     || '').toUpperCase();
+  if (newBizName !== cfg.bizName || newAddress !== cfg.address ||
+      newRfc !== cfg.rfc || newMsg !== cfg.msg) {
+    cfg = { ...cfg, bizName: newBizName, address: newAddress, rfc: newRfc, msg: newMsg };
+    changed = true;
+  }
+
+  if (changed) {
+    saveAll();
+    try { localStorage.setItem('naye_pos_backup', JSON.stringify({ products, sales, cuts, cfg })); } catch {}
+  }
+  return changed;
 }
 
 async function init() {
-  // 1. localStorage inmediato
+  // 1. Arrancar con localStorage inmediatamente
   try {
     const local = JSON.parse(localStorage.getItem('naye_pos_backup') || 'null');
     if (local) {
@@ -1010,41 +1093,55 @@ async function init() {
     }
   } catch {}
 
-  // 2. Renderizar de inmediato con datos locales
+  // Migrar datos existentes a mayúsculas
+  migrateToUpperCase();
+
+  // 2. Renderizar todo YA (la app responde inmediatamente)
   updateHeader(); loadSettings(); renderInventory();
   renderCut(); renderHistory(); updateCartUI();
-  document.getElementById('hdrFecha').textContent =
-    new Date().toLocaleDateString('es-MX', { weekday:'long', día:'numeric', month:'long', year:'numeric' });
+  restoreCart();
+  mostrarBienvenida();
   document.getElementById('hdrFecha').textContent =
     new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  updateConnectionStatus('connecting');
+  updateConnectionStatus('offline');
 
-  // 3. Conectar a Firebase con reintento automático
+  // 3. Sincronizar Firebase en segundo plano
   DB.load().then(data => {
-    if (data) { applyData(data); }
+    if (!data) return;
+    products = data.products || products;
+    sales    = data.sales    || sales;
+    cuts     = data.cuts     || cuts;
+    cfg      = { ...cfg, ...(data.cfg || {}) };
+    migrateToUpperCase();
+    updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
     updateConnectionStatus('online');
     toast('🟢 Sincronizado con la nube');
-    startListener();
-  }).catch(() => {
-    updateConnectionStatus('offline');
-    _retryTimer = setTimeout(tryReconnect, 20000);
+  }).catch(() => updateConnectionStatus('offline'));
+
+  // 4. Escuchar cambios en tiempo real
+  DB.listen(data => {
+    products = data.products || products;
+    sales    = data.sales    || sales;
+    cuts     = data.cuts     || cuts;
+    cfg      = { ...cfg, ...(data.cfg || {}) };
+    migrateToUpperCase();
+    updateHeader(); renderInventory(); renderCut(); renderHistory();
+    updateConnectionStatus('online');
+    try { localStorage.setItem('naye_pos_backup', JSON.stringify({ products, sales, cuts, cfg })); } catch {}
   });
 }
 
 function updateConnectionStatus(status) {
-  const el = document.getElementById('connStatus');
+  let el = document.getElementById('connStatus');
   if (!el) return;
   const map = {
     connecting: ['🟡', '#ca8a04', 'Conectando...'],
     online:     ['🟢', '#16a34a', 'En línea'],
-    offline:    ['🔴', '#dc2626', 'Sin conexión — Toca para reconectar'],
+    offline:    ['🔴', '#dc2626', 'Sin servidor'],
   };
   const [icon, color, label] = map[status] || map.offline;
-  const cursor = status === 'offline' ? 'cursor:pointer' : '';
-  const onclick = status === 'offline' ? 'onclick="tryReconnect()"' : '';
-  el.innerHTML = `<span style="color:${color};font-size:11px;font-weight:700;${cursor}" ${onclick} title="Toca para reconectar">${icon} ${label}</span>`;
+  el.innerHTML = `<span style="color:${color};font-size:11px;font-weight:700">${icon} ${label}</span>`;
 }
-
 
 function updateHeader() {
   document.getElementById('hdrName').textContent = cfg.bizName;
@@ -1308,6 +1405,9 @@ function updateCartUI() {
       </tbody>
     </table>`;
 
+  // Guardar carrito automaticamente (proteccion WiFi)
+  saveCart();
+
   // Resumen lateral con descuento por nota
   summary.innerHTML = `
     <div class="cart-total-row"><span>Artículos:</span><span>${cart.reduce((s,i)=>s+i.qty,0)}</span></div>
@@ -1373,7 +1473,7 @@ function quitarDescuentoNota() {
 
 // ─── COMPLETE SALE ─────────────────────────────────────────────────────────────
 function completeSale() {
-  var customer = document.getElementById('posCustomer').value.trim();
+  var customer = document.getElementById('posCustomer').value.trim().toUpperCase();
   if (!customer) { toast('Escribe el nombre de la clienta', 'error'); return; }
   if (!cart.length) { toast('El carrito esta vacio', 'error'); return; }
   var sale = saveSaleFromCart();
@@ -1396,10 +1496,11 @@ function completeSale() {
     + sep + NL
     + (cfg.msg || '¡Gracias por su compra!');
   navigator.clipboard.writeText(msgWA).catch(function() {});
-  toast('PDF abierto - Nota copiada para WhatsApp');
-  clearCartUI();
+  toast('✅ PDF abierto — Nota copiada para WhatsApp');
   renderInventory();
   renderHistory();
+  // Mostrar botón "Nueva venta" sin borrar el carrito automáticamente
+  mostrarBotonNuevaVenta();
 }
 
 // ─── LABEL ────────────────────────────────────────────────────────────────────
@@ -1409,11 +1510,12 @@ function clearCartUI() {
   _lastScannedId = null;
   window._currentSaleId = null;
   document.getElementById('posCustomer').value = '';
+  clearCartBackup();
   updateCartUI();
 }
 
 function printLabelFromCart() {
-  const customer = document.getElementById('posCustomer').value.trim();
+  const customer = document.getElementById('posCustomer').value.trim().toUpperCase();
   const total    = cart.reduce((s, i) => s + i.sellPrice * i.qty, 0);
   if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
   if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
@@ -1610,19 +1712,6 @@ function generateTicketPDF(sale) {
   // ── Filas de productos ──
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
-    // ── Salto de página si se desborda ──
-    if (y > 255) {
-      doc.addPage();
-      y = 14;
-      // Encabezado de tabla repetido en la nueva página
-      doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
-      doc.text('PRODUCTO', PL, y);
-      doc.text('CANT',    PL+112, y, {align:'center'});
-      doc.text('P.UNIT.', PL+140, y, {align:'center'});
-      doc.text('SUBTOTAL', W-PR, y, {align:'right'});
-      ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
-      doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
-    }
     const maxChars = Math.floor(200 / (bodySize * 0.42));
     const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
@@ -1665,12 +1754,13 @@ function generateTicketPDF(sale) {
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
   doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
 
-  abrirPDFVisor(doc, 'ticket-' + sale.customer.replace(/\s+/g,'-').toLowerCase() + '-' + sale.id.slice(-6));
+  abrirPDFVisor(doc);
 }
 
+// ─── COMPARTIR POR WHATSAPP ────────────────────────────────────────────────────
 // ─── GUARDAR NOTA EN HISTORIAL (sin imprimir PDF) ─────────────────────────────
 function saveSaleFromCart() {
-  const customer = document.getElementById('posCustomer').value.trim();
+  const customer = document.getElementById('posCustomer').value.trim().toUpperCase();
   if (!customer || !cart.length) return null;
 
   // Verificar si ya se guardó esta nota (para no duplicar)
@@ -1719,7 +1809,7 @@ function waNumeroNuevoEnviar() {
   const num = document.getElementById('waNumeroNuevo').value.trim().replace(/\D/g,'');
   if (num.length !== 10) { toast('Escribe los 10 dígitos del número', 'error'); return; }
 
-  const customer = document.getElementById('posCustomer').value.trim();
+  const customer = document.getElementById('posCustomer').value.trim().toUpperCase();
   if (!customer) { toast('Escribe el nombre de la clienta primero', 'error'); return; }
   if (!cart.length) { toast('Agrega productos al carrito primero', 'error'); return; }
 
@@ -1759,7 +1849,7 @@ function waYEtiqueta() {
 
 function buildMsgFromCart() {
   if (!document.getElementById('posCustomer').value.trim()) {
-    document.getElementById('posCustomer').value = 'Cliente';
+    document.getElementById('posCustomer').value = 'CLIENTE';
   }
   const sale = saveSaleFromCart();
   if (!sale) return null;
@@ -2019,9 +2109,9 @@ function renderHistory() {
         </table>
         <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
           <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="generateTicketPDF(sales.find(x=>x.id==='${s.id}'))">📄 PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick='generateTicketPDF(${JSON.stringify(s)})'>📄 PDF</button>
             <button class="btn btn-ghost btn-sm" onclick="printLabel('${escJs(s.customer)}',${s.total},'${s.date}')">🏷️ Etiqueta</button>
-            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="shareWhatsApp(sales.find(x=>x.id==='${s.id}'))">📲 WhatsApp</button>
+            <button class="btn btn-sm" style="background:#25D366;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick='shareWhatsApp(${JSON.stringify(s)})'>📲 WhatsApp</button>
             <button class="btn btn-sm" style="background:#f59e0b;color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="editarNota('${s.id}')">✏️ Editar</button>
             <button class="btn btn-sm" style="background:var(--red);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;padding:5px 10px;font-size:12px" onclick="eliminarNota('${s.id}')">🗑️ Eliminar</button>
           </div>
@@ -2488,7 +2578,7 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  cfg.bizName       = document.getElementById('cfgBizName').value.trim()  || 'MI NEGOCIO';
+  cfg.bizName       = document.getElementById('cfgBizName').value.trim().toUpperCase()  || 'MI NEGOCIO';
   cfg.phone         = document.getElementById('cfgPhone').value.trim();
   cfg.address       = document.getElementById('cfgAddress').value.trim();
   cfg.rfc           = document.getElementById('cfgRfc').value.trim();
@@ -2614,7 +2704,7 @@ function editarNota(id) {
   if (!sale) return;
   _editNotaId = id;
   _editItems  = sale.items.map(i => ({...i}));
-  document.getElementById('editNotaCliente').value = sale.customer;
+  document.getElementById('editNotaCliente').value = sale.customer.toUpperCase();
   document.getElementById('editNotaSearch').value  = '';
   document.getElementById('editNotaSearchResults').style.display = 'none';
   renderEditItems();
@@ -2696,7 +2786,7 @@ function editNotaAgregarProducto(prodId) {
 function guardarEditNota() {
   const sale = sales.find(s => s.id === _editNotaId);
   if (!sale) return;
-  const nuevoNombre = document.getElementById('editNotaCliente').value.trim();
+  const nuevoNombre = document.getElementById('editNotaCliente').value.trim().toUpperCase();
   if (!nuevoNombre) { toast('El nombre no puede estar vacío', 'error'); return; }
   if (!_editItems.length) { toast('La nota debe tener al menos un producto', 'error'); return; }
 
