@@ -1723,8 +1723,25 @@ function generateTicketPDF(sale) {
   ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
   // ── Filas de productos ──
+  const PAGE_H = 270; // altura útil en mm (carta = 279, dejamos margen inferior)
+  const addPageIfNeeded = () => {
+    if (y > PAGE_H) {
+      doc.addPage();
+      y = 14;
+      // Repetir encabezado de columnas en la nueva página
+      doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
+      doc.text('PRODUCTO', PL, y);
+      doc.text('CANT',    PL+112, y, {align:'center'});
+      doc.text('P.UNIT.', PL+140, y, {align:'center'});
+      doc.text('SUBTOTAL', W-PR, y, {align:'right'});
+      ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
+      doc.setFont('helvetica','normal');
+    }
+  };
+
   doc.setFont('helvetica','normal'); doc.setFontSize(bodySize);
   sale.items.forEach(item => {
+    addPageIfNeeded();
     const maxChars = Math.floor(200 / (bodySize * 0.42));
     const name = item.name.length > maxChars ? item.name.slice(0, maxChars)+'…' : item.name;
     doc.text(name,                           PL,      y);
@@ -1735,6 +1752,9 @@ function generateTicketPDF(sale) {
     doc.setFont('helvetica','normal');
     ln(lineH);
   });
+
+  // Si el cierre (totales + QR) no cabe en la página actual, nueva página
+  if (y > PAGE_H - 60) { doc.addPage(); y = 14; }
 
   doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
 
