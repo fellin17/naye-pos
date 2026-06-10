@@ -926,9 +926,12 @@ function restoreCart() {
     var data = JSON.parse(raw);
     if (!data || (Date.now() - data.ts) > 8 * 60 * 60 * 1000) return;
     if (!data.cart || !data.cart.length) return;
+    // CANDADO: si la nota ya fue completada (tiene currentSaleId), NO restaurar.
+    // Esa venta ya está en el historial — restaurarla causaría notas duplicadas/revueltas.
+    if (data.currentSaleId) { clearCartBackup(); return; }
     cart = data.cart;
     _descuentoNota = data.descuentoNota || 0;
-    window._currentSaleId = data.currentSaleId || null;
+    window._currentSaleId = null;
     if (data.customer) {
       var el = document.getElementById('posCustomer');
       if (el) el.value = data.customer;
@@ -1499,9 +1502,9 @@ function completeSale() {
   toast('✅ PDF abierto — Pantalla lista para nueva venta');
   renderInventory();
   renderHistory();
-  // Limpiar pantalla automáticamente para la siguiente nota
-  // (la venta ya quedó guardada en el historial)
-  setTimeout(function(){ clearCartUI(); }, 1200);
+  // Limpiar INMEDIATAMENTE (el PDF ya tiene su copia de los datos)
+  // Nota: setTimeout aquí falla porque el navegador congela timers en pestañas de fondo
+  clearCartUI();
 }
 
 // ─── LABEL ────────────────────────────────────────────────────────────────────
@@ -1525,8 +1528,8 @@ function printLabelFromCart() {
   renderHistory();
   toast('Nota guardada — Pantalla lista para nueva venta');
   printLabel(customer, total, new Date().toISOString());
-  // Limpiar pantalla automáticamente para la siguiente nota
-  setTimeout(() => clearCartUI(), 1200);
+  // Limpiar INMEDIATAMENTE (la etiqueta ya tiene sus datos)
+  clearCartUI();
 }
 
 function updateLabelPreview() {
@@ -1871,8 +1874,8 @@ function waNumeroNuevoEnviar() {
   // Abrir directo la app de WhatsApp
   abrirWA(`https://web.whatsapp.com/send?phone=52${num}&text=${encodeURIComponent(msg)}`);
   document.getElementById('waNumeroNuevo').value = '';
-  // Limpiar pantalla para nueva venta
-  setTimeout(() => clearCartUI(), 800);
+  // Limpiar INMEDIATAMENTE (el mensaje ya fue construido y enviado a WhatsApp)
+  clearCartUI();
 }
 
 function waYEtiqueta() {
