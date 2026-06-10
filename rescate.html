@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚑 Rescate de Datos — Punto de Venta</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+  body { background:#1a1a2e; color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:#16213e; border-radius:16px; padding:32px; max-width:560px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.5); }
+  h1 { font-size:22px; margin-bottom:8px; }
+  .sub { font-size:13px; color:#a0a0c0; margin-bottom:24px; line-height:1.5; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+  .stat { background:#0f3460; border-radius:10px; padding:16px 10px; text-align:center; }
+  .stat .n { font-size:32px; font-weight:900; color:#4fc3f7; }
+  .stat .l { font-size:11px; color:#a0a0c0; margin-top:4px; }
+  .status { border-radius:10px; padding:14px 16px; font-size:13px; line-height:1.6; margin-bottom:20px; }
+  .status.ok { background:rgba(76,175,80,.15); border:1px solid rgba(76,175,80,.4); color:#a5d6a7; }
+  .status.bad { background:rgba(244,67,54,.15); border:1px solid rgba(244,67,54,.4); color:#ef9a9a; }
+  .status.warn { background:rgba(255,193,7,.12); border:1px solid rgba(255,193,7,.35); color:#ffe082; }
+  button { width:100%; padding:15px; border:none; border-radius:10px; font-size:15px; font-weight:800; cursor:pointer; margin-bottom:10px; }
+  .btn-down { background:#37474f; color:#fff; }
+  .btn-up { background:linear-gradient(135deg,#2e7d32,#43a047); color:#fff; }
+  .btn-up:disabled, .btn-down:disabled { opacity:.35; cursor:not-allowed; }
+  .log { background:#000; border-radius:8px; padding:12px; font-family:monospace; font-size:11px; color:#4fc3f7; max-height:140px; overflow-y:auto; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🚑 Rescate de Datos</h1>
+  <div class="sub">Esta página lee la copia local guardada en este navegador <b>sin conectarse a la nube</b>, para que no se sobrescriba nada. Si encuentra tus datos, podrás descargar un respaldo y restaurarlos a Firebase.</div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n" id="nProd">—</div><div class="l">PRODUCTOS</div></div>
+    <div class="stat"><div class="n" id="nSales">—</div><div class="l">VENTAS/NOTAS</div></div>
+    <div class="stat"><div class="n" id="nCuts">—</div><div class="l">CORTES</div></div>
+  </div>
+
+  <div class="status warn" id="statusBox">Leyendo copia local de este navegador...</div>
+
+  <button class="btn-down" id="btnDown" disabled onclick="descargarRespaldo()">⬇️ 1. Descargar respaldo (JSON) — hazlo primero</button>
+  <button class="btn-up" id="btnUp" disabled onclick="subirANube()">☁️ 2. RESTAURAR TODO A LA NUBE</button>
+
+  <div class="log" id="log">Esperando...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+var DATA = null;
+
+function log(m) {
+  var el = document.getElementById('log');
+  el.textContent += '\n' + m;
+  el.scrollTop = el.scrollHeight;
+}
+
+// 1. Leer la copia local SIN tocar la nube
+(function leer() {
+  try {
+    var raw = localStorage.getItem('naye_pos_backup');
+    if (!raw) {
+      document.getElementById('statusBox').className = 'status bad';
+      document.getElementById('statusBox').textContent = '❌ Este navegador NO tiene copia local. Abre esta misma página (rescate.html) en el dispositivo donde el punto de venta sí mostraba los datos.';
+      log('Sin copia local en este navegador.');
+      return;
+    }
+    DATA = JSON.parse(raw);
+    var p = (DATA.products || []).length;
+    var s = (DATA.sales || []).length;
+    var c = (DATA.cuts || []).length;
+    document.getElementById('nProd').textContent = p;
+    document.getElementById('nSales').textContent = s;
+    document.getElementById('nCuts').textContent = c;
+
+    if (p === 0 && s === 0 && c === 0) {
+      document.getElementById('statusBox').className = 'status bad';
+      document.getElementById('statusBox').textContent = '❌ La copia local de este navegador está vacía. Prueba en otro dispositivo donde el punto de venta sí mostraba los datos.';
+      log('Copia local vacía. Probar en otro dispositivo.');
+      return;
+    }
+
+    document.getElementById('statusBox').className = 'status ok';
+    document.getElementById('statusBox').textContent = '✅ ¡DATOS ENCONTRADOS! ' + p + ' productos, ' + s + ' ventas, ' + c + ' cortes. Primero descarga el respaldo, después restaura a la nube.';
+    document.getElementById('btnDown').disabled = false;
+    document.getElementById('btnUp').disabled = false;
+    log('Datos encontrados: ' + p + ' productos, ' + s + ' ventas, ' + c + ' cortes.');
+  } catch(e) {
+    document.getElementById('statusBox').className = 'status bad';
+    document.getElementById('statusBox').textContent = '❌ Error leyendo la copia local: ' + e.message;
+    log('Error: ' + e.message);
+  }
+})();
+
+// 2. Descargar respaldo JSON
+function descargarRespaldo() {
+  var blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'respaldo_punto_venta_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  log('Respaldo descargado. GUÁRDALO en un lugar seguro.');
+}
+
+// 3. Restaurar a Firebase
+function subirANube() {
+  if (!DATA) return;
+  var p = (DATA.products || []).length, s = (DATA.sales || []).length;
+  if (!confirm('Se subirán ' + p + ' productos y ' + s + ' ventas a la nube, reemplazando lo que haya ahí. ¿Continuar?')) return;
+  log('Conectando a Firebase...');
+  try {
+    firebase.initializeApp({
+      apiKey:            "AIzaSyAuJFzKFx1F35f-oD9rnYo01D2HJCGt_C8",
+      authDomain:        "brandy-skincare-pos.firebaseapp.com",
+      projectId:         "brandy-skincare-pos",
+      storageBucket:     "brandy-skincare-pos.firebasestorage.app",
+      messagingSenderId: "661572753505",
+      appId:             "1:661572753505:web:d4104559379c9189be3220"
+    });
+    var doc = firebase.firestore().collection('naye_pos').doc('data');
+    doc.set({
+      products: DATA.products || [],
+      sales:    DATA.sales    || [],
+      cuts:     DATA.cuts     || [],
+      cfg:      DATA.cfg      || {}
+    }).then(function() {
+      log('✅ ¡RESTAURADO! Todos los datos están de vuelta en la nube.');
+      document.getElementById('statusBox').className = 'status ok';
+      document.getElementById('statusBox').textContent = '🎉 ¡LISTO! Datos restaurados en la nube. Ya puedes abrir el punto de venta normalmente en todos tus dispositivos.';
+      alert('🎉 ¡RESTAURACIÓN COMPLETA!\n\nYa puedes abrir el punto de venta normalmente.');
+    }).catch(function(e) {
+      log('❌ Error al subir: ' + e.message);
+      alert('Error al subir: ' + e.message);
+    });
+  } catch(e) {
+    log('❌ Error: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
