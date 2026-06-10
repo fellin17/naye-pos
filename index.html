@@ -1496,11 +1496,12 @@ function completeSale() {
     + sep + NL
     + (cfg.msg || '¡Gracias por su compra!');
   navigator.clipboard.writeText(msgWA).catch(function() {});
-  toast('✅ PDF abierto — Nota copiada para WhatsApp');
+  toast('✅ PDF abierto — Pantalla lista para nueva venta');
   renderInventory();
   renderHistory();
-  // Mostrar botón "Nueva venta" sin borrar el carrito automáticamente
-  mostrarBotonNuevaVenta();
+  // Limpiar pantalla automáticamente para la siguiente nota
+  // (la venta ya quedó guardada en el historial)
+  setTimeout(function(){ clearCartUI(); }, 1200);
 }
 
 // ─── LABEL ────────────────────────────────────────────────────────────────────
@@ -1521,8 +1522,11 @@ function printLabelFromCart() {
   if (!cart.length) { toast('El carrito está vacío', 'error'); return; }
 
   saveSaleFromCart();
-  toast('Nota guardada en historial');
+  renderHistory();
+  toast('Nota guardada — Pantalla lista para nueva venta');
   printLabel(customer, total, new Date().toISOString());
+  // Limpiar pantalla automáticamente para la siguiente nota
+  setTimeout(() => clearCartUI(), 1200);
 }
 
 function updateLabelPreview() {
@@ -1660,8 +1664,8 @@ function shareWhatsAppById(id) {
 function generateTicketPDF(sale) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
-  const W = 216, PL = 18, PR = 18;
-  let y = 14;
+  const W = 216, PL = 8, PR = 8;
+  let y = 8;
   const ln = (h) => { y += h; };
 
   // ── Config de tamaños ──
@@ -1723,11 +1727,11 @@ function generateTicketPDF(sale) {
   ln(3); doc.setLineWidth(0.5); doc.line(PL, y, W-PR, y); ln(lineH);
 
   // ── Filas de productos ──
-  const PAGE_H = 270; // altura útil en mm (carta = 279, dejamos margen inferior)
+  const PAGE_H = 274; // altura útil en mm (carta = 279, margen inferior mínimo)
   const addPageIfNeeded = () => {
     if (y > PAGE_H) {
       doc.addPage();
-      y = 14;
+      y = 8;
       // Repetir encabezado de columnas en la nueva página
       doc.setFontSize(bodySize); doc.setFont('helvetica','bold');
       doc.text('PRODUCTO', PL, y);
@@ -1754,9 +1758,9 @@ function generateTicketPDF(sale) {
   });
 
   // Si el cierre (totales + QR) no cabe en la página actual, nueva página
-  if (y > PAGE_H - 60) { doc.addPage(); y = 14; }
+  if (y > PAGE_H - 48) { doc.addPage(); y = 8; }
 
-  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
+  doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(4);
 
   // ── Totales ──
   doc.setFontSize(10); doc.setFont('helvetica','normal');
@@ -1766,26 +1770,26 @@ function generateTicketPDF(sale) {
   doc.setLineWidth(0.7); doc.line(W-PR-85, y, W-PR, y); ln(5);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
   doc.text('TOTAL A PAGAR:', W-PR-85, y);
-  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(10);
+  doc.text(fmt(sale.total), W-PR, y, {align:'right'}); ln(6);
 
   // ── Pie de página ──
-  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(5);
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(PL, y, W-PR, y); ln(4);
   doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(60,60,60);
-  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(5);
+  doc.text(cfg.msg || '¡Gracias por su compra! Vuelva pronto 😊', W/2, y, {align:'center'}); ln(4);
   doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
-  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'}); ln(5);
+  doc.text('Comprobante de venta — ' + (cfg.bizName || 'MI NEGOCIO'), W/2, y, {align:'center'}); ln(4);
 
   // QR
   const qrDataUrl = makeQRDataURL(getSaleQRText(sale));
   if (qrDataUrl) {
-    const qrSize = 28;
+    const qrSize = 20;
     doc.addImage(qrDataUrl, 'PNG', W/2 - qrSize/2, y, qrSize, qrSize);
-    ln(qrSize + 3);
+    ln(qrSize + 2);
   }
   doc.setFontSize(7); doc.setTextColor(130,130,130);
-  doc.text('Escanea el QR para consultar esta nota', W/2, y, {align:'center'}); ln(4);
+  doc.text('Escanea el QR para consultar esta nota', W/2, y, {align:'center'}); ln(3.5);
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-  doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});
+  doc.text('Folio: #' + sale.id.slice(-8).toUpperCase(), W/2, y, {align:'center'});;
 
   abrirPDFVisor(doc);
 }
