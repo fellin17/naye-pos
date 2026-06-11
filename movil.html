@@ -489,14 +489,14 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 
 <script>
 // ─── FIREBASE ─────────────────────────────────────────────────────────────────
-// ⚠️ REEMPLAZA ESTOS VALORES CON TU NUEVO PROYECTO FIREBASE
+// Proyecto: naye-pos — mismo que la versión PC, para sincronización total
 const fbCfg = {
-  apiKey: "AIzaSyAuJFzKFx1F35f-oD9rnYo01D2HJCGt_C8",
-  authDomain: "brandy-skincare-pos.firebaseapp.com",
-  projectId: "brandy-skincare-pos",
-  storageBucket: "brandy-skincare-pos.firebasestorage.app",
-  messagingSenderId: "661572753505",
-  appId:             "1:661572753505:web:d4104559379c9189be3220"
+  apiKey: "AIzaSyBLftuYYcSBporOE9EJ4Say_zJI7gYz2mQ",
+  authDomain: "naye-pos.firebaseapp.com",
+  projectId: "naye-pos",
+  storageBucket: "naye-pos.firebasestorage.app",
+  messagingSenderId: "937595385178",
+  appId:             "1:937595385178:web:a612a1844265710cdcaf63"
 };
 let fbDoc = null, fbReady = false;
 try {
@@ -508,6 +508,11 @@ try {
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let products = [], sales = [], cuts = [], cfg = { bizName: 'Brandy POS' };
 let cart = [];
+
+// ─── PROTECCIÓN ANTI-BORRADO ──────────────────────────────────────────────────
+function _hayDatos(d) {
+  return !!(d && ((d.products && d.products.length) || (d.sales && d.sales.length) || (d.cuts && d.cuts.length)));
+}
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadData() {
@@ -525,9 +530,17 @@ async function loadData() {
         new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 6000))
       ]);
       if (snap.exists) {
-        applyData(snap.data());
-        localStorage.setItem('naye_pos_backup', JSON.stringify(snap.data()));
-        setSyncStatus('🟢 Sincronizado');
+        const d = snap.data();
+        // 🛡️ AUTO-REPARACIÓN: si la nube viene vacía pero este equipo tiene datos, re-subir
+        if (!_hayDatos(d) && _hayDatos({products, sales, cuts})) {
+          saveData();
+          setSyncStatus('🛡️ Nube vacía — datos locales re-subidos');
+        } else {
+          applyData(d);
+          localStorage.setItem('naye_pos_backup', JSON.stringify(d));
+          if (_hayDatos(d)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
+          setSyncStatus('🟢 Sincronizado');
+        }
       }
     } catch(e) {
       setSyncStatus('🔴 Sin conexión');
@@ -536,8 +549,12 @@ async function loadData() {
     // Escuchar cambios en tiempo real
     fbDoc.onSnapshot(snap => {
       if (snap.exists) {
-        applyData(snap.data());
-        localStorage.setItem('naye_pos_backup', JSON.stringify(snap.data()));
+        const d = snap.data();
+        // 🛡️ Ignorar nube vacía si este equipo tiene datos
+        if (!_hayDatos(d) && _hayDatos({products, sales, cuts})) return;
+        applyData(d);
+        localStorage.setItem('naye_pos_backup', JSON.stringify(d));
+        if (_hayDatos(d)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
         setSyncStatus('🟢 En línea');
         renderInventario();
         renderNotas();
@@ -561,6 +578,12 @@ function applyData(data) {
 
 async function saveData() {
   const data = { products, sales, cuts, cfg };
+  // 🛡️ CANDADO: nunca subir vacío encima de datos existentes
+  if (!_hayDatos(data) && localStorage.getItem('naye_pos_had_data') === '1') {
+    console.warn('🛡️ BLOQUEADO: no se suben datos vacíos a la nube');
+    return;
+  }
+  if (_hayDatos(data)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
   try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
   if (fbReady) fbDoc.set(data).catch(() => {});
 }
