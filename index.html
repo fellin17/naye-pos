@@ -722,6 +722,20 @@ return QRCode;
       </div>
 
       <div class="settings-section">
+        <h3>🛡️ Respaldos y protección</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">El sistema guarda un respaldo automático diario en este navegador. Además puedes descargar una copia completa a un archivo y restaurarla cuando quieras.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn btn-primary" onclick="descargarRespaldoJSON()">⬇️ Descargar respaldo completo</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('inputImportarRespaldo').click()">⬆️ Restaurar desde archivo</button>
+          <input type="file" id="inputImportarRespaldo" accept=".json" style="display:none" onchange="importarRespaldoJSON(this)">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="selSnapshots" class="input" style="max-width:260px"></select>
+          <button class="btn btn-ghost" onclick="restaurarSnapshot()">♻️ Restaurar respaldo automático</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
         <h3>🗑️ Zona de peligro</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Elimina todos los datos guardados. Esta acción no se puede deshacer.</p>
         <button class="btn btn-danger" onclick="resetAll()">⚠️ Borrar todos los datos</button>
@@ -835,14 +849,14 @@ return QRCode;
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 // ─── FIREBASE ─────────────────────────────────────────────────────────────────
-// ⚠️ REEMPLAZA ESTOS VALORES CON TU NUEVO PROYECTO FIREBASE
+// Proyecto: naye-pos (Firestore) — doble respaldo nube + dispositivo
 const _fbCfg = {
-  apiKey:            "AIzaSyAuJFzKFx1F35f-oD9rnYo01D2HJCGt_C8",
-  authDomain:        "brandy-skincare-pos.firebaseapp.com",
-  projectId:         "brandy-skincare-pos",
-  storageBucket:     "brandy-skincare-pos.firebasestorage.app",
-  messagingSenderId: "661572753505",
-  appId:             "1:661572753505:web:d4104559379c9189be3220"
+  apiKey:            "AIzaSyBLftuYYcSBporOE9EJ4Say_zJI7gYz2mQ",
+  authDomain:        "naye-pos.firebaseapp.com",
+  projectId:         "naye-pos",
+  storageBucket:     "naye-pos.firebasestorage.app",
+  messagingSenderId: "937595385178",
+  appId:             "1:937595385178:web:a612a1844265710cdcaf63"
 };
 let _fbReady = false, _fbDoc = null;
 try {
@@ -903,7 +917,90 @@ let cfg = {
 let cart = [], editProdId = null;
 let _descuentoNota = 0; // descuento global de la nota (en pesos)
 let _lastScannedId = null; // último producto escaneado/agregado
-function saveAll() { DB.save({ products, sales, cuts, cfg }); }
+// ─── PROTECCIÓN ANTI-BORRADO + RESPALDOS ──────────────────────────────────────
+function _hayDatos(d) {
+  return !!(d && ((d.products && d.products.length) || (d.sales && d.sales.length) || (d.cuts && d.cuts.length)));
+}
+function saveAll() {
+  const payload = { products, sales, cuts, cfg };
+  // CANDADO: nunca subir datos vacíos encima de datos existentes
+  if (!_hayDatos(payload) && localStorage.getItem('naye_pos_had_data') === '1') {
+    console.warn('🛡️ BLOQUEADO: intento de guardar datos vacíos sobre datos existentes');
+    if (typeof toast === 'function') toast('🛡️ Protección activa: no se suben datos vacíos a la nube', 'error');
+    return;
+  }
+  if (_hayDatos(payload)) {
+    try { localStorage.setItem('naye_pos_had_data', '1'); } catch(e) {}
+  }
+  DB.save(payload);
+  guardarSnapshotDiario();
+}
+
+// Snapshot automático: 1 por día, conserva los últimos 3
+function guardarSnapshotDiario() {
+  try {
+    if (!_hayDatos({products, sales, cuts})) return;
+    const k = 'naye_snap_' + new Date().toISOString().slice(0, 10);
+    localStorage.setItem(k, JSON.stringify({ products, sales, cuts, cfg, ts: Date.now() }));
+    const keys = Object.keys(localStorage).filter(x => x.startsWith('naye_snap_')).sort();
+    while (keys.length > 3) { localStorage.removeItem(keys.shift()); }
+    poblarSelectSnapshots();
+  } catch(e) { console.warn('snapshot:', e); }
+}
+
+function poblarSelectSnapshots() {
+  const sel = document.getElementById('selSnapshots');
+  if (!sel) return;
+  const keys = Object.keys(localStorage).filter(x => x.startsWith('naye_snap_')).sort().reverse();
+  sel.innerHTML = keys.length
+    ? keys.map(k => `<option value="${k}">Respaldo del ${k.replace('naye_snap_','')}</option>`).join('')
+    : '<option value="">— Sin respaldos automáticos aún —</option>';
+}
+
+function restaurarSnapshot() {
+  const sel = document.getElementById('selSnapshots');
+  if (!sel || !sel.value) { toast('No hay respaldo automático seleccionado', 'error'); return; }
+  try {
+    const d = JSON.parse(localStorage.getItem(sel.value));
+    if (!_hayDatos(d)) { toast('Ese respaldo está vacío', 'error'); return; }
+    const p = (d.products||[]).length, s = (d.sales||[]).length;
+    if (!confirm(`Restaurar respaldo del ${sel.value.replace('naye_snap_','')}:\n${p} productos, ${s} ventas.\n\n¿Continuar? Reemplazará los datos actuales.`)) return;
+    products = d.products || []; sales = d.sales || []; cuts = d.cuts || []; cfg = { ...cfg, ...(d.cfg||{}) };
+    saveAll();
+    updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory(); updateCartUI();
+    toast('♻️ Respaldo restaurado y subido a la nube');
+  } catch(e) { toast('Error al restaurar: ' + e.message, 'error'); }
+}
+
+function descargarRespaldoJSON() {
+  const data = { products, sales, cuts, cfg, exportado: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'respaldo_pos_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('⬇️ Respaldo descargado — guárdalo en lugar seguro');
+}
+
+function importarRespaldoJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!_hayDatos(d)) { toast('El archivo no contiene datos válidos', 'error'); return; }
+      const p = (d.products||[]).length, s = (d.sales||[]).length, c = (d.cuts||[]).length;
+      if (!confirm(`El archivo contiene:\n${p} productos, ${s} ventas, ${c} cortes.\n\n¿Restaurar? Reemplazará los datos actuales.`)) return;
+      products = d.products || []; sales = d.sales || []; cuts = d.cuts || []; cfg = { ...cfg, ...(d.cfg||{}) };
+      saveAll();
+      updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory(); updateCartUI();
+      toast('✅ Respaldo restaurado y subido a la nube');
+    } catch(err) { toast('Archivo inválido: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
 
 // ─── PERSISTENCIA DEL CARRITO (proteccion contra recarga por WiFi) ────────────
 function saveCart() {
@@ -1110,19 +1207,36 @@ async function init() {
 
   // 3. Sincronizar Firebase en segundo plano
   DB.load().then(data => {
-    if (!data) return;
+    if (!data) { poblarSelectSnapshots(); return; }
+    // 🛡️ AUTO-REPARACIÓN: si la nube viene VACÍA pero este dispositivo tiene datos,
+    // NO adoptar lo vacío — re-subir los datos locales a la nube.
+    if (!_hayDatos(data) && _hayDatos({products, sales, cuts})) {
+      console.warn('🛡️ Nube vacía detectada con datos locales presentes — re-subiendo');
+      saveAll();
+      updateConnectionStatus('online');
+      toast('🛡️ Nube vacía detectada — tus datos locales fueron re-subidos');
+      poblarSelectSnapshots();
+      return;
+    }
     products = data.products || products;
     sales    = data.sales    || sales;
     cuts     = data.cuts     || cuts;
     cfg      = { ...cfg, ...(data.cfg || {}) };
+    if (_hayDatos(data)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
     migrateToUpperCase();
     updateHeader(); loadSettings(); renderInventory(); renderCut(); renderHistory();
     updateConnectionStatus('online');
     toast('🟢 Sincronizado con la nube');
+    poblarSelectSnapshots();
   }).catch(() => updateConnectionStatus('offline'));
 
   // 4. Escuchar cambios en tiempo real
   DB.listen(data => {
+    // 🛡️ Mismo candado en tiempo real: ignorar nube vacía si hay datos locales
+    if (!_hayDatos(data) && _hayDatos({products, sales, cuts})) {
+      console.warn('🛡️ Cambio vacío de la nube ignorado (hay datos locales)');
+      return;
+    }
     products = data.products || products;
     sales    = data.sales    || sales;
     cuts     = data.cuts     || cuts;
@@ -2644,12 +2758,14 @@ function saveSettings() {
 
 function resetAll() {
   if (!confirm('¿Seguro? Se borrarán TODOS los datos (productos, ventas, cortes).')) return;
-  localStorage.removeItem('naye_pos_backup');
-  fetch('/api/data', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ products: [], sales: [], cuts: [], cfg }),
-  }).finally(() => location.reload());
+  if (!confirm('⚠️ ÚLTIMA CONFIRMACIÓN: esta acción es PERMANENTE.\n\nTe recomendamos descargar un respaldo primero (botón en la sección Respaldos).\n\n¿Borrar todo definitivamente?')) return;
+  // Liberar candado de protección (borrado intencional autorizado)
+  try { localStorage.removeItem('naye_pos_had_data'); } catch(e) {}
+  try { localStorage.removeItem('naye_pos_backup'); } catch(e) {}
+  try { localStorage.removeItem('naye_pos_cart'); } catch(e) {}
+  products = []; sales = []; cuts = [];
+  DB.save({ products: [], sales: [], cuts: [], cfg });
+  setTimeout(() => location.reload(), 600);
 }
 
 // ─── CONFIGURACIÓN DEL ENCABEZADO ─────────────────────────────────────────────
