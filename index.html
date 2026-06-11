@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Naye POS">
 <link rel="manifest" href="manifest.json">
 <title>Naye Skincare POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -46,15 +47,15 @@ return QRCode;
   /* ── RESET & BASE ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #fff0f8; --surface: #ffffff; --surface2: #fce7f3;
-    --border: #f9a8d4; --accent: #be185d; --accent-light: #fdf2f8;
-    --green: #16a34a; --green-light: #dcfce7; --red: #dc2626; --red-light: #fee2e2;
-    --orange: #ea580c; --orange-light: #fff7ed;
-    --fuchsia: #a21caf; --fuchsia-light: #fdf4ff;
-    --text: #1a0010; --muted: #9d174d; --subtle: #f9a8d4;
-    --shadow: 0 1px 3px rgba(190,24,93,0.1), 0 1px 2px rgba(0,0,0,0.06);
-    --shadow-lg: 0 4px 6px -1px rgba(190,24,93,0.15), 0 2px 4px -1px rgba(0,0,0,0.06);
-    --radius: 10px;
+    --bg: #0B0F1A; --surface: #121A2A; --surface2: #162033;
+    --border: rgba(168,85,247,0.18); --accent: #A855F7; --accent-light: #1a1230;
+    --green: #22C55E; --green-light: rgba(34,197,94,0.12); --red: #EF4444; --red-light: rgba(239,68,68,0.12);
+    --orange: #F59E0B; --orange-light: rgba(245,158,11,0.12);
+    --fuchsia: #EC4899; --fuchsia-light: rgba(236,72,153,0.12);
+    --text: #F8FAFC; --muted: #CBD5E1; --subtle: #94A3B8;
+    --shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(168,85,247,0.06);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(168,85,247,0.08);
+    --radius: 14px;
   }
 
   /* ── ANIMACIONES ── */
@@ -75,7 +76,7 @@ return QRCode;
     0% { transform: scale(0); opacity: 1; }
     100% { transform: scale(2.5); opacity: 0; }
   }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
   button { cursor: pointer; font-family: inherit; }
   input, select, textarea { font-family: inherit; }
 
@@ -94,7 +95,7 @@ return QRCode;
 
   /* ── NAV ── */
   #nav {
-    background: white; border-bottom: 2px solid var(--border);
+    background: var(--surface); border-bottom: 2px solid var(--border);
     display: flex; overflow-x: auto; position: sticky; top: 56px; z-index: 99;
   }
   #nav button {
@@ -109,7 +110,7 @@ return QRCode;
   #main { padding: 16px; max-width: 900px; margin: 0 auto; width: 100%; }
 
   /* ── CARDS ── */
-  .card { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow .2s; } .card:hover { box-shadow: 0 4px 16px rgba(190,24,93,0.12); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow .2s; } .card:hover { box-shadow: 0 4px 16px rgba(190,24,93,0.12); }
   .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
 
   /* ── INPUTS ── */
@@ -173,14 +174,14 @@ return QRCode;
 
   /* ── STATS ── */
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-  .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
   .stat-value { font-size: 22px; font-weight: 800; color: var(--accent); }
   .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
 
   /* ── MODAL ── */
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
   .modal-bg.open { display: flex; }
-  .modal { background: white; border-radius: 12px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .modal { background: var(--surface); border-radius: 12px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
   .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
   .modal-header h3 { font-size: 16px; font-weight: 700; }
   .modal-body { padding: 20px; }
@@ -189,7 +190,7 @@ return QRCode;
 
   /* ── SEARCH DROPDOWN ── */
   .search-wrap { position: relative; }
-  .search-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; z-index: 50; max-height: 260px; overflow-y: auto; box-shadow: var(--shadow-lg); }
+  .search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; z-index: 50; max-height: 260px; overflow-y: auto; box-shadow: var(--shadow-lg); }
   .search-item { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); transition: background .1s; }
   .search-item:hover { background: var(--accent-light); border-left: 3px solid var(--accent); }
   .search-item:last-child { border-bottom: none; }
@@ -222,7 +223,7 @@ return QRCode;
   .no-stock { color: var(--red); font-weight: 700; }
 
   /* ── SETTINGS ── */
-  .settings-section { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .settings-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
   .settings-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); display: flex; align-items: center; gap: 6px; }
 
   /* ── KBD ── */
@@ -259,6 +260,36 @@ return QRCode;
     .search-item { padding: 14px 12px; min-height: 48px; }
     .modal { max-height: 95vh; }
   }
+  /* MIDNIGHT ORCHID — REFINAMIENTOS VISUALES */
+  h1, h2, h3, .biz-name, .card-header, .stat-value, .modal-header h3 { font-family: 'Poppins', sans-serif; }
+  #header { background: linear-gradient(135deg, #160d28 0%, #1a1033 50%, #0e1b2e 100%) !important; border-bottom: 1px solid rgba(168,85,247,0.25) !important; box-shadow: 0 2px 20px rgba(168,85,247,0.12); }
+  .tab.active, .nav-tab.active { color: var(--accent) !important; border-bottom-color: var(--accent) !important; text-shadow: 0 0 12px rgba(168,85,247,0.5); }
+  .btn-primary { background: linear-gradient(135deg, #A855F7, #EC4899) !important; color: #fff !important; border: none !important; box-shadow: 0 4px 16px rgba(168,85,247,0.35); }
+  .btn-primary:hover { box-shadow: 0 6px 24px rgba(168,85,247,0.55), 0 0 20px rgba(236,72,153,0.3) !important; transform: translateY(-1px); }
+  .btn-success { background: linear-gradient(135deg, #22C55E, #16A34A) !important; color:#fff !important; border:none !important; box-shadow: 0 4px 16px rgba(34,197,94,0.3); }
+  .btn-success:hover { box-shadow: 0 6px 24px rgba(34,197,94,0.5), 0 0 20px rgba(34,197,94,0.25) !important; }
+  .btn-danger { background: linear-gradient(135deg, #EF4444, #DC2626) !important; color:#fff !important; border:none !important; }
+  .btn-danger:hover { box-shadow: 0 6px 24px rgba(239,68,68,0.45) !important; }
+  .btn-ghost { background: transparent !important; color: var(--accent) !important; border: 1px solid rgba(168,85,247,0.4) !important; }
+  .btn-ghost:hover { background: rgba(168,85,247,0.1) !important; border-color: var(--accent) !important; box-shadow: 0 0 16px rgba(168,85,247,0.2) !important; }
+  .input, input[type="text"], input[type="number"], input[type="tel"], input[type="email"], select, textarea { background: #0e1626 !important; border: 1px solid rgba(168,85,247,0.2) !important; color: var(--text) !important; }
+  .input:focus, input:focus, select:focus, textarea:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(168,85,247,0.15), 0 0 16px rgba(168,85,247,0.15) !important; }
+  .input::placeholder, input::placeholder, textarea::placeholder { color: var(--subtle) !important; }
+  .card, .stat-card, .settings-section { background: linear-gradient(180deg, #121A2A, #0f1623) !important; border: 1px solid rgba(168,85,247,0.15) !important; }
+  .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.5), 0 0 24px rgba(168,85,247,0.1) !important; }
+  .card-header { color: var(--accent) !important; border-bottom-color: rgba(168,85,247,0.15) !important; }
+  th { background: #0e1626 !important; color: var(--subtle) !important; border-bottom-color: rgba(168,85,247,0.15) !important; }
+  td { border-bottom-color: rgba(168,85,247,0.08) !important; }
+  tr:hover td { background: rgba(168,85,247,0.05) !important; }
+  .modal { background: linear-gradient(180deg, #141c2c, #0f1623) !important; border: 1px solid rgba(168,85,247,0.2) !important; }
+  .modal-header, .modal-footer { border-color: rgba(168,85,247,0.15) !important; }
+  .tag-green, .badge-success { background: rgba(34,197,94,0.15) !important; color: #4ade80 !important; }
+  .search-results { background: #141c2c !important; border-color: rgba(168,85,247,0.2) !important; }
+  .search-item:hover { background: rgba(168,85,247,0.1) !important; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #0B0F1A; }
+  ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
 </style>
 </head>
 <body>
@@ -392,7 +423,7 @@ return QRCode;
       <!-- Panel Top 10 -->
       <div id="top10Panel" style="display:none;margin-bottom:14px">
         <div class="card">
-          <div class="card-header" style="background:linear-gradient(135deg,#be185d,#a21caf);color:white">
+          <div class="card-header" style="background:linear-gradient(135deg,#A855F7,#EC4899);color:white">
             🏆 Top 10 — Productos más vendidos
             <button onclick="toggleTop10PC()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px;float:right">✕ Cerrar</button>
           </div>
@@ -574,7 +605,7 @@ return QRCode;
           <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">
             Vista previa del encabezado
           </div>
-          <div id="headerPreview" style="border:1.5px solid var(--border);border-radius:8px;padding:16px;background:white;min-height:80px">
+          <div id="headerPreview" style="border:1.5px solid var(--border);border-radius:8px;padding:16px;background: var(--surface);min-height:80px">
           </div>
         </div>
 
@@ -698,7 +729,7 @@ return QRCode;
             <div id="labelPreview" style="
               width:154.9px; height:94.5px;
               border:2px dashed var(--border); border-radius:4px;
-              background:white; display:flex; flex-direction:column;
+              background: var(--surface); display:flex; flex-direction:column;
               align-items:center; justify-content:center;
               overflow:hidden; flex-shrink:0;
               box-shadow:var(--shadow);
@@ -1695,7 +1726,7 @@ function printLabel(customer, total, saleDate) {
         justify-content:center; align-items:center;
         font-family:Arial,sans-serif;
         padding-top:${margin}mm; padding-left:2mm; padding-right:2mm; padding-bottom:1mm;
-        background:white;
+        background: var(--surface);
       }
       .name  { font-size:${nameSize}pt;  font-weight:bold; text-align:center; word-break:break-word; line-height:1.2; }
       .total { font-size:${priceSize}pt; font-weight:bold; margin-top:1mm; letter-spacing:-0.5px; }
@@ -2271,7 +2302,7 @@ function renderHistory() {
           </div>
           <div style="text-align:center;flex-shrink:0">
             <div class="qr-placeholder" data-qr="${encodeURIComponent(getSaleQRText(s))}"
-              style="width:80px;height:80px;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:white;display:flex;align-items:center;justify-content:center;">
+              style="width:80px;height:80px;border:1px solid var(--border);border-radius:6px;overflow:hidden;background: var(--surface);display:flex;align-items:center;justify-content:center;">
             </div>
             <div style="font-size:9px;color:var(--muted);margin-top:3px;text-align:center">📷 Escanear nota</div>
           </div>
