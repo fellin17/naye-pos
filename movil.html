@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="nube.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
@@ -512,21 +513,14 @@ header, .header { background: linear-gradient(135deg,#160d28,#1a1033,#0e1b2e) !i
 
 <script>
 // ─── FIREBASE ─────────────────────────────────────────────────────────────────
-// Proyecto: naye-pos — mismo que la versión PC, para sincronización total
-const fbCfg = {
-  apiKey: "AIzaSyBLftuYYcSBporOE9EJ4Say_zJI7gYz2mQ",
-  authDomain: "naye-pos.firebaseapp.com",
-  projectId: "naye-pos",
-  storageBucket: "naye-pos.firebasestorage.app",
-  messagingSenderId: "937595385178",
-  appId:             "1:937595385178:web:a612a1844265710cdcaf63"
-};
-let fbDoc = null, fbReady = false;
-try {
-  firebase.initializeApp(fbCfg);
-  fbDoc = firebase.firestore().collection('naye_pos').doc('data');
-  fbReady = true;
-} catch(e) { console.warn('Firebase:', e.message); }
+// Proyecto: naye-pos — mismo que la versión PC, para sincronización total.
+// La conexión y el reparto de los datos en varios documentos viven en nube.js.
+const fbReady = NubePOS.iniciar();
+NubePOS.alFallar(e => {
+  console.warn('Firebase save:', e.message);
+  setSyncStatus('🔴 No se guardó en la nube');
+  toast('❌ No se pudo guardar en la nube: ' + e.message, 'error');
+});
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let products = [], sales = [], cuts = [], cfg = { bizName: 'Brandy POS' };
@@ -548,19 +542,18 @@ async function loadData() {
   // Firebase
   if (fbReady) {
     try {
-      const snap = await Promise.race([
-        fbDoc.get(),
+      const d = await Promise.race([
+        NubePOS.cargar(),
         new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 6000))
       ]);
-      if (snap.exists) {
-        const d = snap.data();
+      if (d) {
         // 🛡️ AUTO-REPARACIÓN: si la nube viene vacía pero este equipo tiene datos, re-subir
         if (!_hayDatos(d) && _hayDatos({products, sales, cuts})) {
           saveData();
           setSyncStatus('🛡️ Nube vacía — datos locales re-subidos');
         } else {
           applyData(d);
-          localStorage.setItem('naye_pos_backup', JSON.stringify(d));
+          try { localStorage.setItem('naye_pos_backup', JSON.stringify(d)); } catch {}
           if (_hayDatos(d)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
           setSyncStatus('🟢 Sincronizado');
         }
@@ -570,18 +563,15 @@ async function loadData() {
     }
 
     // Escuchar cambios en tiempo real
-    fbDoc.onSnapshot(snap => {
-      if (snap.exists) {
-        const d = snap.data();
-        // 🛡️ Ignorar nube vacía si este equipo tiene datos
-        if (!_hayDatos(d) && _hayDatos({products, sales, cuts})) return;
-        applyData(d);
-        localStorage.setItem('naye_pos_backup', JSON.stringify(d));
-        if (_hayDatos(d)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
-        setSyncStatus('🟢 En línea');
-        renderInventario();
-        renderNotas();
-      }
+    NubePOS.escuchar(d => {
+      // 🛡️ Ignorar nube vacía si este equipo tiene datos
+      if (!_hayDatos(d) && _hayDatos({products, sales, cuts})) return;
+      applyData(d);
+      try { localStorage.setItem('naye_pos_backup', JSON.stringify(d)); } catch {}
+      if (_hayDatos(d)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
+      setSyncStatus('🟢 En línea');
+      renderInventario();
+      renderNotas();
     }, () => setSyncStatus('🔴 Sin conexión'));
   } else {
     setSyncStatus('📱 Modo local');
@@ -608,7 +598,7 @@ async function saveData() {
   }
   if (_hayDatos(data)) { try { localStorage.setItem('naye_pos_had_data','1'); } catch(e){} }
   try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
-  if (fbReady) fbDoc.set(data).catch(() => {});
+  if (fbReady) NubePOS.guardar(data);
 }
 
 function setSyncStatus(msg) {
@@ -1829,7 +1819,7 @@ function borrarTodoMovil() {
   if (!confirm('⚠️ ÚLTIMA ADVERTENCIA:\n¿Estás completamente segura?\n\nTodo quedará en cero.')) return;
   products = []; sales = []; cuts = [];
   try { localStorage.removeItem('naye_pos_backup'); } catch {}
-  if (typeof fbDoc !== 'undefined' && fbDoc) fbDoc.set({ products: [], sales: [], cuts: [], cfg }).catch(() => {});
+  if (fbReady) NubePOS.guardar({ products: [], sales: [], cuts: [], cfg }, true);
   renderInventario();
   renderNotas();
   renderUltimosProductos();

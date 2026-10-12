@@ -46,6 +46,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="nube.js"></script>
 <script>
 var DATA = null;
 
@@ -108,33 +109,25 @@ function subirANube() {
   var p = (DATA.products || []).length, s = (DATA.sales || []).length;
   if (!confirm('Se subirán ' + p + ' productos y ' + s + ' ventas a la nube, reemplazando lo que haya ahí. ¿Continuar?')) return;
   log('Conectando a Firebase...');
-  try {
-    firebase.initializeApp({
-      apiKey:            "AIzaSyBLftuYYcSBporOE9EJ4Say_zJI7gYz2mQ",
-      authDomain:        "naye-pos.firebaseapp.com",
-      projectId:         "naye-pos",
-      storageBucket:     "naye-pos.firebasestorage.app",
-      messagingSenderId: "937595385178",
-      appId:             "1:937595385178:web:a612a1844265710cdcaf63"
-    });
-    var doc = firebase.firestore().collection('naye_pos').doc('data');
-    doc.set({
-      products: DATA.products || [],
-      sales:    DATA.sales    || [],
-      cuts:     DATA.cuts     || [],
-      cfg:      DATA.cfg      || {}
-    }).then(function() {
-      log('✅ ¡RESTAURADO! Todos los datos están de vuelta en la nube.');
-      document.getElementById('statusBox').className = 'status ok';
-      document.getElementById('statusBox').textContent = '🎉 ¡LISTO! Datos restaurados en la nube. Ya puedes abrir el punto de venta normalmente en todos tus dispositivos.';
-      alert('🎉 ¡RESTAURACIÓN COMPLETA!\n\nYa puedes abrir el punto de venta normalmente.');
-    }).catch(function(e) {
-      log('❌ Error al subir: ' + e.message);
-      alert('Error al subir: ' + e.message);
-    });
-  } catch(e) {
-    log('❌ Error: ' + e.message);
-  }
+  if (!NubePOS.iniciar()) { log('❌ No se pudo conectar a Firebase'); return; }
+  var error = null;
+  NubePOS.alFallar(function(e) { error = e; });
+  NubePOS.guardar({
+    products: DATA.products || [],
+    sales:    DATA.sales    || [],
+    cuts:     DATA.cuts     || [],
+    cfg:      DATA.cfg      || {}
+  }, true).then(function(ok) {
+    if (!ok) {
+      log('❌ Error al subir: ' + (error ? error.message : 'desconocido'));
+      alert('Error al subir: ' + (error ? error.message : 'desconocido'));
+      return;
+    }
+    log('✅ ¡RESTAURADO! Todos los datos están de vuelta en la nube.');
+    document.getElementById('statusBox').className = 'status ok';
+    document.getElementById('statusBox').textContent = '🎉 ¡LISTO! Datos restaurados en la nube. Ya puedes abrir el punto de venta normalmente en todos tus dispositivos.';
+    alert('🎉 ¡RESTAURACIÓN COMPLETA!\n\nYa puedes abrir el punto de venta normalmente.');
+  });
 }
 </script>
 </body>

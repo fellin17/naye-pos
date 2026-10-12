@@ -878,23 +878,16 @@ return QRCode;
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="nube.js"></script>
 <script>
 // ─── FIREBASE ─────────────────────────────────────────────────────────────────
-// Proyecto: naye-pos (Firestore) — doble respaldo nube + dispositivo
-const _fbCfg = {
-  apiKey:            "AIzaSyBLftuYYcSBporOE9EJ4Say_zJI7gYz2mQ",
-  authDomain:        "naye-pos.firebaseapp.com",
-  projectId:         "naye-pos",
-  storageBucket:     "naye-pos.firebasestorage.app",
-  messagingSenderId: "937595385178",
-  appId:             "1:937595385178:web:a612a1844265710cdcaf63"
-};
-let _fbReady = false, _fbDoc = null;
-try {
-  firebase.initializeApp(_fbCfg);
-  _fbDoc = firebase.firestore().collection('naye_pos').doc('data');
-  _fbReady = true;
-} catch(e) { console.warn('Firebase init:', e.message); }
+// Proyecto: naye-pos (Firestore) — doble respaldo nube + dispositivo.
+// La conexión y el reparto de los datos en varios documentos viven en nube.js.
+const _fbReady = NubePOS.iniciar();
+NubePOS.alFallar(e => {
+  console.warn('Firebase save:', e.message);
+  toast('❌ No se pudo guardar en la nube: ' + e.message, 'error');
+});
 
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const DB = {
@@ -904,27 +897,26 @@ const DB = {
     try { local = JSON.parse(localStorage.getItem('naye_pos_backup')); } catch {}
     if (!_fbReady) return local;
     try {
-      const snap = await Promise.race([
-        _fbDoc.get(),
+      const d = await Promise.race([
+        NubePOS.cargar(),
         new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
       ]);
-      if (snap.exists) {
-        const d = snap.data();
+      if (d) {
         try { localStorage.setItem('naye_pos_backup', JSON.stringify(d)); } catch {}
         return d;
       }
     } catch(e) { console.warn('Firebase load:', e.message); }
     return local;
   },
-  // Guarda: localStorage + Firebase en paralelo
-  save(data) {
+  // Guarda: localStorage + Firebase en paralelo (forzar: permite dejar la nube vacía, solo "Borrar todo")
+  save(data, forzar) {
     try { localStorage.setItem('naye_pos_backup', JSON.stringify(data)); } catch {}
-    if (_fbReady) _fbDoc.set(data).catch(e => console.warn('Firebase save:', e.message));
+    if (_fbReady) NubePOS.guardar(data, forzar);
   },
   // Escucha cambios en tiempo real
   listen(cb) {
     if (!_fbReady) return;
-    _fbDoc.onSnapshot(s => { if (s.exists) cb(s.data()); }, e => console.warn('listen:', e.message));
+    NubePOS.escuchar(cb, e => console.warn('listen:', e.message));
   }
 };
 
@@ -972,9 +964,12 @@ function guardarSnapshotDiario() {
   try {
     if (!_hayDatos({products, sales, cuts})) return;
     const k = 'naye_snap_' + new Date().toISOString().slice(0, 10);
-    localStorage.setItem(k, JSON.stringify({ products, sales, cuts, cfg, ts: Date.now() }));
-    const keys = Object.keys(localStorage).filter(x => x.startsWith('naye_snap_')).sort();
-    while (keys.length > 3) { localStorage.removeItem(keys.shift()); }
+    // Borrar los viejos ANTES de escribir: con el almacenamiento lleno, escribir primero fallaba siempre
+    const keys = Object.keys(localStorage).filter(x => x.startsWith('naye_snap_') && x !== k).sort();
+    while (keys.length > 2) { localStorage.removeItem(keys.shift()); }
+    // Sin el logo (~225 KB): al restaurar se conserva el logo actual
+    const { headerLogo, ...cfgSinLogo } = cfg;
+    localStorage.setItem(k, JSON.stringify({ products, sales, cuts, cfg: cfgSinLogo, ts: Date.now() }));
     poblarSelectSnapshots();
   } catch(e) { console.warn('snapshot:', e); }
 }
@@ -2695,6 +2690,9 @@ function closeProductModal() {
 });
 
 function saveProduct() {
+  // Enter repetido (tecla sostenida o lector de código) seguía llegando al campo de stock
+  // ya con la ventana cerrada y creaba copias del mismo producto
+  if (!document.getElementById('modalProduct').classList.contains('open')) return;
   const name      = document.getElementById('mName').value.trim();
   const barcode   = document.getElementById('mBarcode').value.trim();
   const buyPrice  = parseFloat(document.getElementById('mBuyPrice').value)  || 0;
@@ -2705,8 +2703,9 @@ function saveProduct() {
   if (!sellPrice) { toast('El precio de venta es requerido', 'error'); return; }
 
   const entry = { id: editProdId || Date.now().toString(), barcode, name, buyPrice, sellPrice, stock };
+  const editando = !!editProdId; // closeProductModal() limpia editProdId
 
-  if (editProdId) {
+  if (editando) {
     products = products.map(p => p.id === editProdId ? entry : p);
   } else {
     products.push(entry);
@@ -2714,7 +2713,7 @@ function saveProduct() {
   saveAll();
   closeProductModal();
   renderInventory();
-  toast(editProdId ? 'Producto actualizado ✅' : 'Producto agregado ✅');
+  toast(editando ? 'Producto actualizado ✅' : 'Producto agregado ✅');
 }
 
 function deleteProduct(id) {
@@ -2795,7 +2794,7 @@ function resetAll() {
   try { localStorage.removeItem('naye_pos_backup'); } catch(e) {}
   try { localStorage.removeItem('naye_pos_cart'); } catch(e) {}
   products = []; sales = []; cuts = [];
-  DB.save({ products: [], sales: [], cuts: [], cfg });
+  DB.save({ products: [], sales: [], cuts: [], cfg }, true);
   setTimeout(() => location.reload(), 600);
 }
 
