@@ -36,7 +36,7 @@ const NubePOS = (function () {
     try {
       if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
       db = firebase.firestore();
-      try { db.settings({ ignoreUndefinedProperties: true }); } catch (e) {}
+      try { db.settings({ ignoreUndefinedProperties: true, merge: true }); } catch (e) {}
       col = db.collection('naye_pos');
       return true;
     } catch (e) { console.warn('Firebase init:', e.message); return false; }
